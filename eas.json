@@ -5,22 +5,12 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "artifactType": "apk"
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "artifactType": "apk"
-      }
+      "distribution": "internal"
     },
-    "production": {
-      "android": {
-        "artifactType": "apk"
-      }
-    }
+    "production": {}
   },
   "submit": {
     "production": {}

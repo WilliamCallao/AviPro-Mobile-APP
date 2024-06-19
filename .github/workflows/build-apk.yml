@@ -1,9 +1,10 @@
-name: Build APK
+name: Build AAB
 
 on:
   push:
     branches:
       - production
+  workflow_dispatch:
 
 jobs:
   build:
@@ -35,13 +36,13 @@ jobs:
       - name: Configure EAS
         run: eas build:configure
 
-      - name: Build APK
+      - name: Build AAB
         run: eas build --platform android --profile production --non-interactive
 
-      - name: Upload APK to GitHub Artifacts
+      - name: Upload AAB to GitHub Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: apk
+          name: aab
           path: |
-            build/*.apk
-            **/*.apk
+            build/*.aab
+            **/*.aab
