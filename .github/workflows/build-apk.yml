@@ -3,8 +3,8 @@ name: Build AAB
 on:
   push:
     branches:
-      - production
-  workflow_dispatch:
+      - main
+  workflow_dispatch: # Esto permite ejecutar el workflow manualmente desde la interfaz de GitHub
 
 jobs:
   build:
@@ -30,8 +30,10 @@ jobs:
 
       - name: Login to Expo
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: expo login --token $EXPO_TOKEN
+          EXPO_EMAIL: ${{ secrets.EXPO_EMAIL }}
+          EXPO_PASSWORD: ${{ secrets.EXPO_PASSWORD }}
+        run: |
+          echo $EXPO_PASSWORD | expo login -u $EXPO_EMAIL -p $EXPO_PASSWORD --non-interactive
 
       - name: Configure EAS
         run: eas build:configure
