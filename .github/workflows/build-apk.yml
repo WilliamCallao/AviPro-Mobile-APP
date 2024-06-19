@@ -3,8 +3,8 @@ name: Build AAB
 on:
   push:
     branches:
-      - main
-  workflow_dispatch: # Esto permite ejecutar el workflow manualmente desde la interfaz de GitHub
+      - production
+  workflow_dispatch:
 
 jobs:
   build:
@@ -35,8 +35,8 @@ jobs:
         run: |
           echo $EXPO_PASSWORD | expo login -u $EXPO_EMAIL -p $EXPO_PASSWORD --non-interactive
 
-      - name: Configure EAS
-        run: eas build:configure
+      # - name: Configure EAS
+      #   run: eas build:configure
 
       - name: Build AAB
         run: eas build --platform android --profile production --non-interactive
