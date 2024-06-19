@@ -1,7 +1,7 @@
 export default{
   expo: {
-    name: "avi-pro-mobile",
-    slug: "avi-pro-mobile",
+    name: "avipro-app",
+    slug: "avipro-app",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
