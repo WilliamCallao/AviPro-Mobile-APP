@@ -33,7 +33,7 @@ export default{
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      package: "com.williamcallao.avipromobile",
+      package: "com.endurancesoft.avipromobile",
       googleServicesFile: "./google-services.json",
     },
     plugins: [
