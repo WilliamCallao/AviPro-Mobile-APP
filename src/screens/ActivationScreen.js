@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, View, TextInput, Dimensions, Alert } from "react-native";
+import React, { useState } from "react";
+import { Image, StyleSheet, View, TextInput, Dimensions, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { theme } from "../assets/Theme";
 import { useNavigation } from "@react-navigation/native";
-import { db } from "../../config/firebase";
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import userStore from "../stores/userStore";
 import StyledText from "../utils/StyledText";
 import SimpleButton from "../utils/SimpleButton";
-import axios from 'axios'; // Importa Axios
-import { BASE_URL } from "../../config"; // Importa tu base URL
+import axios from 'axios';
+import { BASE_URL } from "../../config";
+import { theme } from "../assets/Theme";
 
 const windowWidth = Dimensions.get('window').width;
 const aspectRatio = 5285 / 5315;
@@ -17,72 +15,36 @@ const aspectRatio = 5285 / 5315;
 const ActivationScreen = () => {
   const [activationCode, setActivationCode] = useState("");
   const [message, setMessage] = useState(false);
-  const [codes, setCodes] = useState([]);
+  const [activationSuccess, setActivationSuccess] = useState(false);
 
   const { setEmpresa, setUser } = userStore(state => ({
     setEmpresa: state.setEmpresa,
     setUser: state.setUser
   }));
 
-  const fecthData = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'codigoActivacion'));
-      const newCodes = [];
-      querySnapshot.forEach((doc) => {
-        const codigo = doc.data().codigo;
-        const used = doc.data().activo;
-        const codigoConId = {
-          id: doc.id,
-          codigo: codigo,
-          activo: used,
-          empresa: doc.data().empresa_id  //nombre directamente
-        }
-        if (!codes.includes(codigo) && used) {
-          newCodes.push(codigoConId);
-        }
-      });
-      setCodes(prevCodes => [...prevCodes, ...newCodes]);
-    } catch (error) {
-      console.error('Error al recuperar documentos:', error);
-    }
-  };
-
-  useEffect(() => {
-    fecthData();
-  }, [db]);
-
-  const handleSend = async () => {
+  const handleActivate = async () => {
     if (activationCode.length === 0) {
-      alert("Por favor llene todos los campos");
+      Alert.alert("Error", "Por favor llene todos los campos");
       return;
     }
-    const codeDocum = codes.find(code => code.codigo === activationCode);
-    if (!codeDocum) {
-      setMessage(true);
-      return;
-    }
-    const docRef = doc(db, 'codigoActivacion', codeDocum.id);
+
     try {
-      await updateDoc(docRef, { activo: false });
+      await axios.put(`${BASE_URL}/api/mobile/dispositivos/estado/usado/${activationCode}`);
+      
       setMessage(false);
-      setEmpresa(codeDocum.empresa);
-      navigation.replace("LoginScreen");
+      setActivationSuccess(true);
+      setEmpresa("EmpresaAsignada"); // Asigna la empresa de manera adecuada según tu lógica de negocio
     } catch (e) {
       setMessage(true);
-    }
-  };
-
-  const handleApiCall = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api/saludo`);
-      Alert.alert("Respuesta de la API", response.data); // Muestra un alert con la respuesta de la API
-    } catch (error) {
-      console.error("Error fetching data from API: ", error);
-      Alert.alert("Error", "Error fetching data");
+      Alert.alert("Error", "La clave de activación es incorrecta");
     }
   };
 
   const navigation = useNavigation();
+
+  const handleContinue = () => {
+    navigation.replace("LoginScreen");
+  };
 
   const handleSkip = () => {
     setUser({
@@ -95,29 +57,45 @@ const ActivationScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.containerImgs}>
-        <Image source={require('../assets/formas.png')} style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 * aspectRatio }} />
-      </View>
-      <View>
-        <StyledText style={styles.title}>Avi Pro Mobile</StyledText>
-        <StyledText style={styles.subtitle}>Clave de activación</StyledText>
-        <TextInput
-          placeholder="XXXX - XXXX - XXXX - XXXX"
-          style={styles.label}
-          onChange={(code) => { setActivationCode(code.nativeEvent.text) }}
-          value={activationCode}
-          keyboardType="default"
-          autoCapitalize="characters"
-        />
-        {message && <StyledText style={styles.errorFormat}>La clave de activación es incorrecta</StyledText>}
-        <StyledText style={styles.softText}>Al continuar acepta todos los términos, condiciones y políticas de privacidad.</StyledText>
-        <SimpleButton text="Continuar" onPress={handleSend} width={styles.button.width} />
-        <SimpleButton text="Llamar API" onPress={handleApiCall} width={styles.button.width} />
-        <StyledText style={styles.softText}>Si desea adquirir una licencia del producto por favor comuníquese con nuestro equipo de ventas.</StyledText>
-        <SimpleButton text="Saltar" onPress={handleSkip} width={styles.button.width} />
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingView}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.containerImgs}>
+            <Image source={require('../assets/formas.png')} style={{ width: windowWidth * 0.75, height: windowWidth * 0.75 * aspectRatio }} />
+          </View>
+          <View>
+            <StyledText style={styles.title}>Avi Pro Mobile</StyledText>
+            {!activationSuccess ? (
+              <>
+                <StyledText style={styles.subtitle}>Clave de activación</StyledText>
+                <TextInput
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  style={styles.label}
+                  onChange={(code) => { setActivationCode(code.nativeEvent.text) }}
+                  value={activationCode}
+                  keyboardType="default"
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                />
+                {message && <StyledText style={styles.errorFormat}>La clave de activación es incorrecta</StyledText>}
+                <StyledText style={styles.softText}>Al continuar acepta todos los términos, condiciones y políticas de privacidad.</StyledText>
+                <SimpleButton text="Activar Aplicación" onPress={handleActivate} width={styles.button.width} />
+              </>
+            ) : (
+              <>
+                <StyledText style={styles.successFormat}>👍 La aplicación fue activada correctamente</StyledText>
+                <SimpleButton text="Continuar" onPress={handleContinue} width={styles.button.width} />
+              </>
+            )}
+            <StyledText style={styles.softText}>Si desea adquirir una licencia del producto por favor comuníquese con nuestro equipo de ventas.</StyledText>
+            <SimpleButton text="Saltar" onPress={handleSkip} width={styles.button.width} />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
@@ -125,6 +103,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#9DBBE2',
     padding: 20,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   containerImgs: {
     alignItems: 'center',
@@ -142,22 +127,34 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     marginBottom: 5,
+    textAlign: 'center',
   },
   label: {
     backgroundColor: 'white',
     marginVertical: 10,
     padding: 10,
     borderRadius: 10,
+    fontSize: 15,
+    textAlign: 'center',
+    letterSpacing: 4,
   },
   softText: {
     color: theme.colors.gray,
     fontSize: 13,
     marginVertical: 18,
+    textAlign: 'center',
   },
   errorFormat: {
     color: 'red',
     fontSize: 13,
     marginTop: -8,
+    textAlign: 'center',
+  },
+  successFormat: {
+    color: 'green',
+    fontSize: 18,
+    marginTop: 20,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: theme.colors.tertiary,
