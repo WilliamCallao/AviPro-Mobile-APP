@@ -51,6 +51,15 @@ const ActivationScreen = () => {
     }
   };
 
+  const handleSaludo = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/saludo`);
+      Alert.alert("Saludo", response.data.message);
+    } catch (e) {
+      Alert.alert("Error", "No se pudo obtener el saludo.");
+    }
+  };
+
   const navigation = useNavigation();
 
   const handleContinue = () => {
@@ -85,7 +94,10 @@ const ActivationScreen = () => {
                 {loading ? (
                   <ActivityIndicator size="large" color={theme.colors.primary} />
                 ) : (
-                  <SimpleButton text="Activar" onPress={handleActivate} width={styles.button.width} />
+                  <>
+                    <SimpleButton text="Activar" onPress={handleActivate} width={styles.button.width} />
+                    <SimpleButton text="Obtener Saludo" onPress={handleSaludo} width={styles.button.width} />
+                  </>
                 )}
                 <StyledText style={styles.softText}>Si no tiene un código de activación, por favor contacte a nuestro equipo de ventas para adquirir una licencia.</StyledText>
               </>
