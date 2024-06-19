@@ -13,10 +13,10 @@ export default{
       githubUrl: ""
     },
     
-    owner: "endurancesoft",
+    owner: "williamcallao",
 
     updates: {
-      url: "https://u.expo.dev/68722059-896d-4f90-9039-57984284a8d6"
+      url: "https://u.expo.dev/b3ea0140-e392-4aeb-a282-05f169bc71c6"
     },
     runtimeVersion: {
       policy: "appVersion"
@@ -33,7 +33,7 @@ export default{
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      package: "com.endurancesoft.avipromobile",
+      package: "com.williamcallao.avipromobile",
       googleServicesFile: "./google-services.json",
     },
     plugins: [
@@ -45,8 +45,8 @@ export default{
     },
     extra: {
       eas: {
-        projectId: "68722059-896d-4f90-9039-57984284a8d6",
-        owner: "endurancesoft",
+        projectId: "b3ea0140-e392-4aeb-a282-05f169bc71c6",
+        owner: "williamcallao",
       },
       }
   },
