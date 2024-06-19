@@ -31,7 +31,7 @@ jobs:
       - name: Login to Expo
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas login --token $EXPO_TOKEN
+        run: expo login --token $EXPO_TOKEN
 
       - name: Configure EAS
         run: eas build:configure
