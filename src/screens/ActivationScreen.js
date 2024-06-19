@@ -31,7 +31,6 @@ const ActivationScreen = () => {
 
     setLoading(true);
 
-    // Garantizar que la animación de carga se muestre durante al menos 2 segundos
     const minLoadingTime = new Promise(resolve => setTimeout(resolve, 2000));
 
     try {
@@ -40,9 +39,11 @@ const ActivationScreen = () => {
         minLoadingTime
       ]);
 
+      await axios.put(`${BASE_URL}/api/mobile/dispositivos/ultimo_uso/${activationCode}`);
+
       setMessage(false);
       setActivationSuccess(true);
-      setEmpresa("EmpresaAsignada"); // Asigna la empresa de manera adecuada según tu lógica de negocio
+      setEmpresa("EmpresaAsignada");
     } catch (e) {
       setMessage(true);
       Alert.alert("Error", "El código de activación es incorrecto. Por favor, verifique e intente nuevamente.");
