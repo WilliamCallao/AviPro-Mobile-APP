@@ -14,13 +14,12 @@ const aspectRatio = 5285 / 5315;
 
 const ActivationScreen = () => {
   const [activationCode, setActivationCode] = useState("");
-  const [message, setMessage] = useState(false);
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [activationSuccess, setActivationSuccess] = useState(false);
 
-  const { setEmpresa, setUser } = userStore(state => ({
-    setEmpresa: state.setEmpresa,
-    setUser: state.setUser
+  const { setEmpresa } = userStore(state => ({
+    setEmpresa: state.setEmpresa
   }));
 
   const handleActivate = async () => {
@@ -30,23 +29,31 @@ const ActivationScreen = () => {
     }
 
     setLoading(true);
+    setMessage("");
 
     const minLoadingTime = new Promise(resolve => setTimeout(resolve, 2000));
 
     try {
-      await Promise.all([
+      const [response] = await Promise.all([
         axios.put(`${BASE_URL}/api/mobile/dispositivos/estado/usado/${activationCode}`),
         minLoadingTime
       ]);
 
-      await axios.put(`${BASE_URL}/api/mobile/dispositivos/ultimo_uso/${activationCode}`);
+      const { message, dispositivo } = response.data;
 
-      setMessage(false);
-      setActivationSuccess(true);
-      setEmpresa("EmpresaAsignada");
+      if (message === "El código fue activado correctamente") {
+        setMessage("El código fue activado correctamente.");
+        setActivationSuccess(true);
+        setEmpresa("EmpresaAsignada");
+      } else if (message === "El código ya fue usado") {
+        setMessage("El código ya fue usado.");
+      } else if (message === "El código ya no es válido") {
+        setMessage("El código ya no es válido.");
+      } else {
+        setMessage("Error desconocido.");
+      }
     } catch (e) {
-      setMessage(true);
-      Alert.alert("Error", "El código de activación es incorrecto. Por favor, verifique e intente nuevamente.");
+      setMessage("Error al activar el código. Por favor, intente nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -93,7 +100,7 @@ const ActivationScreen = () => {
                   autoCapitalize="characters"
                   autoCorrect={false}
                 />
-                {message && <StyledText style={styles.errorFormat}>El código de activación es incorrecto.</StyledText>}
+                {message && <StyledText style={styles.errorFormat}>{message}</StyledText>}
                 {loading ? (
                   <ActivityIndicator size="large" color={theme.colors.primary} />
                 ) : (
@@ -106,9 +113,9 @@ const ActivationScreen = () => {
               </>
             ) : (
               <>
-                <StyledText style={styles.successFormat}>La aplicación fue activada correctamente.</StyledText>
+                <StyledText style={styles.successFormat}>{message}</StyledText>
                 <StyledText style={styles.softText}>Al continuar, acepta todos los términos, condiciones y políticas de privacidad.</StyledText>
-                <SimpleButton text="Continuar" onPress={handleContinue} width={styles.button.width} />
+                {activationSuccess && <SimpleButton text="Continuar" onPress={handleContinue} width={styles.button.width} />}
               </>
             )}
           </View>
@@ -161,6 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     letterSpacing: 4,
+    // marginBottom: 10,
   },
   softText: {
     color: theme.colors.gray,
@@ -170,16 +178,17 @@ const styles = StyleSheet.create({
   },
   errorFormat: {
     color: 'red',
-    fontSize: 13,
+    fontSize: 15,
     marginTop: -8,
     textAlign: 'center',
+    marginBottom: 20,
   },
   successFormat: {
     color: 'green',
     fontSize: 20,
     marginTop: 20,
     textAlign: 'center',
-    marginHorizontal:40,
+    marginHorizontal: 40,
   },
   button: {
     backgroundColor: theme.colors.tertiary,
