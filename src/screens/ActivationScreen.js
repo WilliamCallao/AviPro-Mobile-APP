@@ -42,6 +42,7 @@ const ActivationScreen = () => {
       const { message, dispositivo } = response.data;
 
       if (message === "El código fue activado correctamente") {
+        await axios.put(`${BASE_URL}/api/mobile/dispositivos/ultimo_uso/${activationCode}`);
         setMessage("El código fue activado correctamente.");
         setActivationSuccess(true);
         setEmpresa("EmpresaAsignada");
@@ -168,7 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     letterSpacing: 4,
-    // marginBottom: 10,
   },
   softText: {
     color: theme.colors.gray,
