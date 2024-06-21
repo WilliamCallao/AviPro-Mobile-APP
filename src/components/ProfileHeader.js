@@ -64,7 +64,7 @@ const ProfileHeader = () => {
 
   return (
     <View style={styles.maxContainer}>
-      <StatusBar style="light" backgroundColor={theme.colors.secondary} />
+      <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       <Cascading delay={100} animationKey={animationKey}>
         <TouchableOpacity style={styles.accountContainer} onPress={() => navigation.navigate("ProfileScreen", {username: userName})}>
           <View style={styles.letter}>

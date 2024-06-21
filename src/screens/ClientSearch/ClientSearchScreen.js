@@ -103,7 +103,7 @@ const ClientSearchScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={secondary} />
+      <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       <View style={styles.cover}>
         <View style={styles.up}>
           <Cascading delay={100} animationKey={animationKey}>
