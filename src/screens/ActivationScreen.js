@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image,
   StyleSheet,
@@ -19,6 +19,7 @@ import SimpleButton from "../utils/SimpleButton";
 import axios from "axios";
 import { BASE_URL } from "../../config";
 import { theme } from "../assets/Theme";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const windowWidth = Dimensions.get("window").width;
 const aspectRatio = 5285 / 5315;
@@ -28,10 +29,26 @@ const ActivationScreen = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [activationSuccess, setActivationSuccess] = useState(false);
+  const [empresaId, setEmpresaId] = useState("");
 
   const { setEmpresa } = userStore((state) => ({
     setEmpresa: state.setEmpresa,
   }));
+
+  useEffect(() => {
+    const fetchEmpresaId = async () => {
+      try {
+        const savedEmpresaId = await AsyncStorage.getItem('@empresa_id');
+        if (savedEmpresaId !== null) {
+          setEmpresaId(savedEmpresaId);
+        }
+      } catch (e) {
+        console.error('Error retrieving empresa_id', e);
+      }
+    };
+
+    fetchEmpresaId();
+  }, []);
 
   const handleActivate = async () => {
     if (activationCode.length === 0) {
@@ -61,6 +78,8 @@ const ActivationScreen = () => {
         setMessage("El código fue activado correctamente.");
         setActivationSuccess(true);
         setEmpresa("EmpresaAsignada");
+        await AsyncStorage.setItem('@empresa_id', dispositivo.empresa_id);
+        setEmpresaId(dispositivo.empresa_id);
       } else if (message === "El código ya fue usado") {
         setMessage("El código ya fue usado.");
       } else if (message === "El código ya no es válido") {
@@ -89,7 +108,7 @@ const ActivationScreen = () => {
   const navigation = useNavigation();
 
   const handleContinue = () => {
-    navigation.replace("LoginScreen");
+    navigation.replace("CobradoresScreen");
   };
 
   return (
@@ -126,6 +145,11 @@ const ActivationScreen = () => {
                   autoCapitalize="characters"
                   autoCorrect={false}
                 />
+                {empresaId ? (
+                  <StyledText style={styles.lastCodeText}>
+                    Último ID de empresa: {empresaId}
+                  </StyledText>
+                ) : null}
                 {message && (
                   <StyledText style={styles.errorFormat}>{message}</StyledText>
                 )}
@@ -219,6 +243,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: "center",
     letterSpacing: 4,
+  },
+  lastCodeText: {
+    fontSize: 14,
+    color: theme.colors.gray,
+    textAlign: "center",
+    marginBottom: 10,
   },
   softText: {
     color: theme.colors.gray,
