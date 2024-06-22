@@ -43,9 +43,9 @@ const NoteItem = ({ note, onSelect }) => {
         <View style={noteItemstyles.row}>
           <View>
             <StyledText boldText>{note.nro_nota}</StyledText>
-            <StyledText regularText>{formatDate(note.Fecha_venta)}</StyledText>
+            <StyledText regularText>{formatDate(note.fecha_venta)}</StyledText>
           </View>
-          <StyledText money>{note.Saldo_pendiente} Bs</StyledText>
+          <StyledText money>{note.saldo_pendiente} Bs</StyledText>
           <View>
             <SimpleButton 
               text="Pagar" 
@@ -61,19 +61,19 @@ const NoteItem = ({ note, onSelect }) => {
             </View>
             <View style={noteItemstyles.textLine}>
               <StyledText regularText>Monto Pagado:</StyledText>
-              <StyledText regularText>{note.Monto_pagado} Bs</StyledText>
+              <StyledText regularText>{note.monto_pagado} Bs</StyledText>
             </View>
             <View style={noteItemstyles.textLine}>
               <StyledText regularText>Saldo Pendiente:</StyledText>
-              <StyledText regularText>{note.Saldo_pendiente} Bs</StyledText>
+              <StyledText regularText>{note.saldo_pendiente} Bs</StyledText>
             </View>
             <View style={noteItemstyles.textLine}>
               <StyledText regularText>Fecha de Venta:</StyledText>
-              <StyledText regularText>{formatDate(note.Fecha_venta)}</StyledText>
+              <StyledText regularText>{formatDate(note.fecha_venta)}</StyledText>
             </View>
             <View style={noteItemstyles.textLine}>
               <StyledText regularText>Fecha de Vencimiento:</StyledText>
-              <StyledText regularText>{formatDate(note.Fecha_vence)}</StyledText>
+              <StyledText regularText>{formatDate(note.fecha_vence)}</StyledText>
             </View>
           </>
         )}

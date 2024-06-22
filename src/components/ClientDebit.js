@@ -10,8 +10,8 @@ const screenWidth = Dimensions.get("window").width;
 
 const ClientDebit = ({ clientInfo }) => {
   const vBalance = parseFloat(
-    (clientInfo.NotasPendientes || []).reduce(
-      (total, nota) => total + (parseFloat(nota.Saldo_pendiente) || 0),
+    (clientInfo.notas_pendientes || []).reduce(
+      (total, nota) => total + (parseFloat(nota.saldo_pendiente) || 0),
       0
     ).toFixed(2)
   );
@@ -68,4 +68,5 @@ const clientDebitStyles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
 export default ClientDebit;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions } from 'react-native';
 import { theme } from '../assets/Theme';
 import { useNavigation } from '@react-navigation/native';
@@ -9,41 +9,22 @@ import DropdownSelector from "../components/DropdownSelector";
 import Cascading from "../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
 import StyledText from "../utils/StyledText";
-import axios from 'axios';
-import { BASE_URL } from "../../config";
 const windowWidth = Dimensions.get('window').width;
-import useStore from '../stores/store';
 
 const ClientPaymentScreen = ({ route }) => {
   const { itemClient } = route.params;
+  console.log(JSON.stringify(itemClient, null, 2));
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('Pendientes');
-  const [clientData, setClientData] = useState(null);
+  const [clientData, setClientData] = useState(itemClient);
   const title = 'Notas';
-  const OPCIONES = ['Pendientes', 'Pagadas']
+  const OPCIONES = ['Pendientes', 'Pagadas'];
   const [animationKey, setAnimationKey] = useState(Date.now());
-  
-  const fetchClientData = useCallback(async () => {
-    try {
-      const accountId = itemClient.Cuenta.trim();
-      const response = await axios.get(`${BASE_URL}/empresa/${itemClient.Empresa_ID}/clientes`);
-      const data = response.data.find(client => client.Cuenta.trim() === accountId);
-      setClientData(data);
-      // if (data) {
-      //   console.log("Datos del cliente obtenidos:", JSON.stringify(data, null, 2));
-      // } else {
-      //   console.log("No se encontraron datos para la cuenta:", accountId);
-      // }
-    } catch (error) {
-      console.error("Error fetching client data: ", error);
-    }
-  }, [itemClient]);
 
   useFocusEffect(
     useCallback(() => {
       setAnimationKey(Date.now());
-      fetchClientData();
-    }, [fetchClientData])
+    }, [])
   );
 
   const handleOptionChange = (option) => {
@@ -55,7 +36,7 @@ const ClientPaymentScreen = ({ route }) => {
       delay={index > 6 ? 0 : 400 + 80 * index}
       animationKey={animationKey}
     >
-      <NoteItem note={item} onSelect={() => {}}/>
+      <NoteItem note={item} onSelect={() => { }} />
     </Cascading>
   );
 
@@ -73,7 +54,7 @@ const ClientPaymentScreen = ({ route }) => {
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <View style={styles.text}>
-                <StyledText boldTextUpper>{clientData.Nombre}</StyledText>
+                <StyledText boldTextUpper>{clientData.nombre}</StyledText>
               </View>
             </View>
           </View>
@@ -84,24 +65,24 @@ const ClientPaymentScreen = ({ route }) => {
         <Cascading delay={300} animationKey={animationKey}>
           <DropdownSelector
             title={title}
-            options={OPCIONES}  
+            options={OPCIONES}
             selectedOption={selectedOption}
             onOptionChange={handleOptionChange}
           />
         </Cascading>
       </View>
       <View style={styles.listContainer}>
-      <FlatList
-        data={clientData.NotasPendientes}
-        renderItem={renderItem}
-        keyExtractor={item => item.nro_nota.toString()}
-        ListHeaderComponent={<View style={{ height: 10 }} />}
-        ListFooterComponent={<View style={{ height: 10 }} />}
-        showsVerticalScrollIndicator={false}
-      />
-      </View> 
+        <FlatList
+          data={selectedOption === 'Pendientes' ? clientData.notas_pendientes : clientData.notas_cobradas}
+          renderItem={renderItem}
+          keyExtractor={item => item.nro_nota.toString()}
+          ListHeaderComponent={<View style={{ height: 10 }} />}
+          ListFooterComponent={<View style={{ height: 10 }} />}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({
@@ -156,9 +137,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     textAlign: 'center',
   },
-  listContainer:{
+  listContainer: {
     flex: 1,
   },
-})
+});
 
 export default ClientPaymentScreen;
