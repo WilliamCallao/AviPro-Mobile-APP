@@ -8,13 +8,13 @@ import useStore from "../../stores/store";
 const windowWidth = Dimensions.get('window').width;
 
 const ClientItem = ({ client, onSelect }) => {
-  const vNombre = client.Nombre;
-  const vCuenta = client.Cuenta;
+  const vNombre = client.nombre; // Cambiado de client.Nombre a client.nombre
+  const vCuenta = client.cuenta; // Cambiado de client.Cuenta a client.cuenta
 
-  // Asegurarse de que NotasPendientes esté definido y sea un array
-  const notasPendientes = useMemo(() => Array.isArray(client.NotasPendientes) ? client.NotasPendientes : [], [client.NotasPendientes]);
+  // Asegurarse de que notas_pendientes esté definido y sea un array
+  const notasPendientes = useMemo(() => Array.isArray(client.notas_pendientes) ? client.notas_pendientes : [], [client.notas_pendientes]);
   const vBalance = useMemo(() => parseFloat(notasPendientes.reduce((total, nota) => {
-    const saldoPendiente = parseFloat(nota.Saldo_pendiente);
+    const saldoPendiente = parseFloat(nota.saldo_pendiente); // Cambiado de nota.Saldo_pendiente a nota.saldo_pendiente
     return total + (isNaN(saldoPendiente) ? 0 : saldoPendiente);
   }, 0).toFixed(2)), [notasPendientes]);
 
@@ -24,13 +24,13 @@ const ClientItem = ({ client, onSelect }) => {
 
   useEffect(() => {
     if (pagosRealizados.length > 0) {
-      setUltimoPago(pagosRealizados.reduce((mayor, pago) => pago.fecha > mayor && pago.cuenta === client.Cuenta ? pago.fecha : mayor, "2020-06-10"));
+      setUltimoPago(pagosRealizados.reduce((mayor, pago) => pago.fecha > mayor && pago.cuenta === client.cuenta ? pago.fecha : mayor, "2020-06-10"));
     }
-  }, [pagosRealizados, client.Cuenta]);
+  }, [pagosRealizados, client.cuenta]);
 
   const handlePress = useCallback(() => {
-    onSelect(client.cliente_ID);
-  }, [client.cliente_ID, onSelect]);
+    onSelect(client.cliente_id); // Cambiado de client.cliente_ID a client.cliente_id
+  }, [client.cliente_id, onSelect]);
 
   return (
     <BorderBox onPress={handlePress} style={{ marginVertical: 10 }}>

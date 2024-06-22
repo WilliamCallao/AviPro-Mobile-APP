@@ -26,11 +26,11 @@ const ClientSearchScreen = () => {
 
   const fetchClientes = useCallback(async () => {
     try {
-      const empresaId = 1; // Hardcoded empresa ID
-      const response = await axios.get(`${BASE_URL}/empresa/${empresaId}/clientes`);
+      const empresaId = "02"; // Empresa ID por defecto
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/02/con-notas`);
       setClientesConNotas(response.data);
       setFilteredData(response.data);
-      // console.log(JSON.stringify(response.data, null, 2));
+      console.log(JSON.stringify(response.data, null, 2));
     } catch (error) {
       console.error("Error fetching clientes: ", error);
     }
@@ -57,9 +57,9 @@ const ClientSearchScreen = () => {
     const formattedQuery = text.toLowerCase();
     const newData = clientesConNotas.filter((item) => {
       if (selectedOption === "cliente") {
-        return item.Nombre.toLowerCase().includes(formattedQuery);
+        return item.nombre.toLowerCase().includes(formattedQuery);
       } else if (selectedOption === "cuenta") {
-        return item.Cuenta.toLowerCase().includes(formattedQuery);
+        return item.cuenta.toLowerCase().includes(formattedQuery);
       }
     });
     setFilteredData(newData);
@@ -93,7 +93,7 @@ const ClientSearchScreen = () => {
     )
   ), [animationKey, navigation, isSearching]);
 
-  const keyExtractor = useCallback((item) => item.cliente_ID.toString(), []);
+  const keyExtractor = useCallback((item) => item.cliente_id.toString(), []);
 
   const getItemLayout = useCallback((data, index) => ({
     length: 70,
