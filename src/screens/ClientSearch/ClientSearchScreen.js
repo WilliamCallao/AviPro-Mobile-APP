@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { SafeAreaView, TouchableOpacity, FlatList, StyleSheet, View } from "react-native";
+import { SafeAreaView, TouchableOpacity, FlatList, StyleSheet, View, Alert } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SearchBar from "./SearchBar";
 import ClientItem from "./ClientItem";
 import { StatusBar } from "expo-status-bar";
@@ -23,21 +24,34 @@ const ClientSearchScreen = () => {
   const [animationKey, setAnimationKey] = useState(Date.now());
   const [visibleItemCount, setVisibleItemCount] = useState(10);
   const [isSearching, setIsSearching] = useState(false);
+  const [empresaId, setEmpresaId] = useState(null);
 
-  const fetchClientes = useCallback(async () => {
+  const fetchClientes = useCallback(async (empresaId) => {
     try {
-      const empresaId = 1; // Hardcoded empresa ID
-      const response = await axios.get(`${BASE_URL}/empresa/${empresaId}/clientes`);
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/con-notas`);
       setClientesConNotas(response.data);
       setFilteredData(response.data);
-      // console.log(JSON.stringify(response.data, null, 2));
+      console.log(JSON.stringify(response.data, null, 2));
     } catch (error) {
       console.error("Error fetching clientes: ", error);
     }
   }, []);
 
   useEffect(() => {
-    fetchClientes();
+    const fetchEmpresaId = async () => {
+      try {
+        const id = await AsyncStorage.getItem('@empresa_id');
+        if (id) {
+          setEmpresaId(id);
+          fetchClientes(id);
+        } else {
+          Alert.alert('Error', 'No se pudo obtener el ID de la empresa.');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Ocurrió un error al obtener el ID de la empresa.');
+      }
+    };
+    fetchEmpresaId();
   }, [fetchClientes]);
 
   const loadMoreItems = useCallback(() => {
@@ -57,9 +71,9 @@ const ClientSearchScreen = () => {
     const formattedQuery = text.toLowerCase();
     const newData = clientesConNotas.filter((item) => {
       if (selectedOption === "cliente") {
-        return item.Nombre.toLowerCase().includes(formattedQuery);
+        return item.nombre.toLowerCase().includes(formattedQuery);
       } else if (selectedOption === "cuenta") {
-        return item.Cuenta.toLowerCase().includes(formattedQuery);
+        return item.cuenta.toLowerCase().includes(formattedQuery);
       }
     });
     setFilteredData(newData);
@@ -93,7 +107,7 @@ const ClientSearchScreen = () => {
     )
   ), [animationKey, navigation, isSearching]);
 
-  const keyExtractor = useCallback((item) => item.cliente_ID.toString(), []);
+  const keyExtractor = useCallback((item) => item.cliente_id.toString(), []);
 
   const getItemLayout = useCallback((data, index) => ({
     length: 70,
@@ -103,7 +117,7 @@ const ClientSearchScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={secondary} />
+      <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       <View style={styles.cover}>
         <View style={styles.up}>
           <Cascading delay={100} animationKey={animationKey}>

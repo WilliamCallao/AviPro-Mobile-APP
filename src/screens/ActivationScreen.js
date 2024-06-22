@@ -20,6 +20,7 @@ import axios from "axios";
 import { BASE_URL } from "../../config";
 import { theme } from "../assets/Theme";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from "expo-status-bar";
 
 const windowWidth = Dimensions.get("window").width;
 const aspectRatio = 5285 / 5315;
@@ -113,6 +114,7 @@ const ActivationScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingView}
