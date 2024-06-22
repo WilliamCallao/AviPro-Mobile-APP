@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Dimensions, StyleSheet } from "react-native";
-import { theme } from "../assets/Theme";
+import { theme } from "../../assets/Theme";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
-import SimpleButton from "../utils/SimpleButton";
-import StyledText from "../utils/StyledText";
+import SimpleButton from "../../utils/SimpleButton";
+import StyledText from "../../utils/StyledText";
 
 const screenWidth = Dimensions.get("window").width;
 

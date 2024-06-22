@@ -1,19 +1,19 @@
 import React, { useState, useCallback } from "react";
 import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions } from 'react-native';
-import { theme } from '../assets/Theme';
+import { theme } from '../../assets/Theme';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/AntDesign';
-import ClientDebit from '../components/ClientDebit';
-import NoteItem from "../components/NoteItem";
-import DropdownSelector from "../components/DropdownSelector";
-import Cascading from "../animation/CascadingFadeInView";
+import ClientDebit from './ClientDebit';
+import NoteItem from "./NoteItem";
+import DropdownSelector from "../../components/DropdownSelector";
+import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
-import StyledText from "../utils/StyledText";
+import StyledText from "../../utils/StyledText";
 const windowWidth = Dimensions.get('window').width;
 
 const ClientPaymentScreen = ({ route }) => {
   const { itemClient } = route.params;
-  console.log(JSON.stringify(itemClient, null, 2));
+  // console.log(JSON.stringify(itemClient, null, 2));
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('Pendientes');
   const [clientData, setClientData] = useState(itemClient);

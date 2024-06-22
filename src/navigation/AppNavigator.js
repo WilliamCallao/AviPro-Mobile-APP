@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import NewScreen from '../screens/Home/HomeScreen';
 import ClientSearchScreen from '../screens/ClientSearch/ClientSearchScreen';
 import BillScreen from '../screens/BillScreen';
-import ClientPaymentScreen from '../screens/ClientPaymentScreen';
+import ClientPaymentScreen from '../screens/NotesScreen/ClientPaymentScreen';
 import PayScreen from '../screens/PayScreen';
 import AutomaticPayScreen from '../screens/AutomaticPayScreen';
 import SelectPaymentMethodScreen from '../screens/SelectPaymentMethodScreen';

@@ -1,26 +1,24 @@
 import React, { useState, useRef } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   Animated,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
-import { theme } from "../assets/Theme";
-import BorderBox from "../utils/BorderBox";
-import StyledText from "../utils/StyledText";
 import { useNavigation } from "@react-navigation/native";
-import SimpleButton from "../utils/SimpleButton";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { theme } from "../../assets/Theme";
+import StyledText from "../../utils/StyledText";
 
 const NoteItem = ({ note, onSelect }) => {
   const [expanded, setExpanded] = useState(false);
-  const animationHeight = useRef(new Animated.Value(85)).current; // Initial height set to 85
+  const animationHeight = useRef(new Animated.Value(85)).current;
 
   const toggleExpansion = () => {
     setExpanded(!expanded);
     Animated.timing(animationHeight, {
-      toValue: expanded ? 85 : 250, // Toggles between 85 and 250
+      toValue: expanded ? 85 : 250,
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -46,12 +44,19 @@ const NoteItem = ({ note, onSelect }) => {
             <StyledText regularText>{formatDate(note.fecha_venta)}</StyledText>
           </View>
           <StyledText money>{note.saldo_pendiente} Bs</StyledText>
-          <View>
-            <SimpleButton 
-              text="Pagar" 
-              onPress={() => navigation.navigate("SelectPaymentMethodScreen", { note, payMode: "normal" })}
-            />
-          </View>
+          <TouchableOpacity
+            style={{
+              backgroundColor: theme.colors.otherWhite,
+              paddingHorizontal: 15,
+              padding: 10,
+              borderRadius: 15,
+            }}
+            onPress={() =>
+              navigation.navigate("SelectPaymentMethodScreen", { note, payMode: "normal" })
+            }
+          >
+            <Icon name="money" size={30} color={"black"} />
+          </TouchableOpacity>
         </View>
         {expanded && (
           <>
@@ -77,6 +82,9 @@ const NoteItem = ({ note, onSelect }) => {
             </View>
           </>
         )}
+        <View style={noteItemstyles.iconContainer}>
+          <Icon name={expanded ? "angle-up" : "angle-down"} size={20} color={theme.colors.black} />
+        </View>
       </Animated.View>
     </TouchableWithoutFeedback>
   );
@@ -86,7 +94,7 @@ const noteItemstyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.primary,
     paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     marginVertical: 8,
     marginHorizontal: 20,
     borderWidth: 2,
@@ -103,6 +111,15 @@ const noteItemstyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    position: "absolute",
+    bottom: 5,
+    left: "55%",
+    transform: [{ translateX: -10 }],
   },
 });
 
