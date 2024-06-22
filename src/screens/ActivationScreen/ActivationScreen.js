@@ -13,12 +13,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import userStore from "../stores/userStore";
-import StyledText from "../utils/StyledText";
-import SimpleButton from "../utils/SimpleButton";
+import userStore from "../../stores/userStore";
+import StyledText from "../../utils/StyledText";
+import SimpleButton from "../../utils/SimpleButton";
 import axios from "axios";
-import { BASE_URL } from "../../config";
-import { theme } from "../assets/Theme";
+import { BASE_URL } from "../../../config";
+import { theme } from "../../assets/Theme";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from "expo-status-bar";
 
@@ -122,7 +122,7 @@ const ActivationScreen = () => {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.containerImgs}>
             <Image
-              source={require("../assets/formas.png")}
+              source={require("../../assets/formas.png")}
               style={{
                 width: windowWidth * 0.75,
                 height: windowWidth * 0.75 * aspectRatio,
