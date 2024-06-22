@@ -1,22 +1,21 @@
-import React, {useState} from 'react';
-import { Text, TextInput, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { Text, TextInput, StyleSheet, View, Dimensions, TouchableOpacity } from 'react-native';
 import { theme } from "../assets/Theme";
 import { Controller } from 'react-hook-form';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { format, formatDate } from 'date-fns';
+import { format } from 'date-fns';
 
-const DateInputField = ({ control, name, title, callThrough, type = 'default', isEditable }) => {
+const screenWidth = Dimensions.get('window').width;
 
+const DateInputField = ({ control, name, title, callThrough, isEditable }) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const handleDateChange =  (event, newselectedDate) => {
+    const handleDateChange = (event, newselectedDate) => {
         const currentDate = newselectedDate || selectedDate;
         setShowDatePicker(false);
         setSelectedDate(currentDate);
-        console.log(formatDate(currentDate, 'yyyy-MM-dd')); 
-        console.log('selectedDate', selectedDate);
-        callThrough(formatDate(currentDate, 'yyyy-MM-dd'));
+        callThrough(format(currentDate, 'yyyy-MM-dd'));
     };
 
     return (
@@ -26,16 +25,14 @@ const DateInputField = ({ control, name, title, callThrough, type = 'default', i
                 control={control}
                 name={name}
                 defaultValue=""
-                render={({ field: { onChange, onBlur, value}}) => (
-                    <TextInput
-                        style={styles.input}
-                        onFocus={() => setShowDatePicker(true)}
-                        onBlur={onBlur}
-                        onChangeText={onChange}
-                        value={format(selectedDate, 'dd/MM/yyyy')}
-                        editable={isEditable}
-                    />
-                    
+                render={({ field: { onChange, value } }) => (
+                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                        <TextInput
+                            style={styles.input}
+                            value={format(selectedDate, 'dd/MM/yyyy')}
+                            editable={false}
+                        />
+                    </TouchableOpacity>
                 )}
             />
             {showDatePicker && (
@@ -55,29 +52,31 @@ const styles = StyleSheet.create({
     container: {
         marginHorizontal: 10,
         marginBottom: 20,
-        width: 145,
+        width: screenWidth - 40, // Full width minus margins
     },
     label: {
         color: 'gray',
         fontSize: 18,
         marginBottom: 5,
-        paddingLeft: 10
+        paddingLeft: 10,
     },
     input: {
-      height: 46,
-      borderColor: 'gray',
-      paddingHorizontal: 10,
-      backgroundColor: theme.colors.otherWhite,
-      borderRadius: 22,
-      fontSize: 18,
-      fontWeight: "bold",
-      textAlign: 'center',
+        height: 46,
+        borderColor: '#D6E3F5',
+        paddingHorizontal: 10,
+        backgroundColor: '#D6E3F5', // Background color
+        borderRadius: 10,
+        borderWidth: 2, // Maintain the border
+        fontSize: 18,
+        fontWeight: "bold",
+        textAlign: 'left', // Align text to the left
+        color: 'black', // Text color
     },
     error: {
         color: 'red',
         fontSize: 12,
         marginTop: 1,
-        paddingLeft: 10
+        paddingLeft: 10,
     },
 });
 
