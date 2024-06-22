@@ -31,7 +31,7 @@ const ClientSearchScreen = () => {
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/con-notas`);
       setClientesConNotas(response.data);
       setFilteredData(response.data);
-      console.log(JSON.stringify(response.data, null, 2));
+      // console.log(JSON.stringify(response.data, null, 2));
     } catch (error) {
       console.error("Error fetching clientes: ", error);
     }
