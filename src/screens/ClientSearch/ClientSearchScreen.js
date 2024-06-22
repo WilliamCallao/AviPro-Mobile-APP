@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { SafeAreaView, TouchableOpacity, FlatList, StyleSheet, View } from "react-native";
+import { SafeAreaView, TouchableOpacity, FlatList, StyleSheet, View, Alert } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SearchBar from "./SearchBar";
 import ClientItem from "./ClientItem";
 import { StatusBar } from "expo-status-bar";
@@ -23,11 +24,11 @@ const ClientSearchScreen = () => {
   const [animationKey, setAnimationKey] = useState(Date.now());
   const [visibleItemCount, setVisibleItemCount] = useState(10);
   const [isSearching, setIsSearching] = useState(false);
+  const [empresaId, setEmpresaId] = useState(null);
 
-  const fetchClientes = useCallback(async () => {
+  const fetchClientes = useCallback(async (empresaId) => {
     try {
-      const empresaId = "02"; // Empresa ID por defecto
-      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/02/con-notas`);
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/con-notas`);
       setClientesConNotas(response.data);
       setFilteredData(response.data);
       console.log(JSON.stringify(response.data, null, 2));
@@ -37,7 +38,20 @@ const ClientSearchScreen = () => {
   }, []);
 
   useEffect(() => {
-    fetchClientes();
+    const fetchEmpresaId = async () => {
+      try {
+        const id = await AsyncStorage.getItem('@empresa_id');
+        if (id) {
+          setEmpresaId(id);
+          fetchClientes(id);
+        } else {
+          Alert.alert('Error', 'No se pudo obtener el ID de la empresa.');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Ocurrió un error al obtener el ID de la empresa.');
+      }
+    };
+    fetchEmpresaId();
   }, [fetchClientes]);
 
   const loadMoreItems = useCallback(() => {
