@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import ClientDebit from './ClientDebit';
 import NoteItem from "./NoteItem";
+import PaidNoteItem from "./PaidNoteItem"; // Importar el nuevo componente
 import DropdownSelector from "../../components/DropdownSelector";
 import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
@@ -13,7 +14,7 @@ const windowWidth = Dimensions.get('window').width;
 
 const ClientPaymentScreen = ({ route }) => {
   const { itemClient } = route.params;
-  // console.log(JSON.stringify(itemClient, null, 2));
+  console.log(JSON.stringify(itemClient, null, 2));
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('Pendientes');
   const [clientData, setClientData] = useState(itemClient);
@@ -36,9 +37,17 @@ const ClientPaymentScreen = ({ route }) => {
       delay={index > 6 ? 0 : 400 + 80 * index}
       animationKey={animationKey}
     >
-      <NoteItem note={item} onSelect={() => { }} />
+      {selectedOption === 'Pendientes' ? (
+        <NoteItem note={item} onSelect={() => { }} />
+      ) : (
+        <PaidNoteItem note={item} />
+      )}
     </Cascading>
   );
+
+  const keyExtractor = (item, index) => {
+    return item.nro_nota ? item.nro_nota.toString() : index.toString();
+  };
 
   if (!clientData) {
     return <Text>Cargando datos...</Text>;
@@ -75,7 +84,7 @@ const ClientPaymentScreen = ({ route }) => {
         <FlatList
           data={selectedOption === 'Pendientes' ? clientData.notas_pendientes : clientData.notas_cobradas}
           renderItem={renderItem}
-          keyExtractor={item => item.nro_nota.toString()}
+          keyExtractor={keyExtractor}
           ListHeaderComponent={<View style={{ height: 10 }} />}
           ListFooterComponent={<View style={{ height: 10 }} />}
           showsVerticalScrollIndicator={false}

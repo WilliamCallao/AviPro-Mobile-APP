@@ -46,7 +46,7 @@ const NoteItem = ({ note, onSelect }) => {
           <StyledText money>{note.saldo_pendiente} Bs</StyledText>
           <TouchableOpacity
             style={{
-              backgroundColor: theme.colors.otherWhite,
+              backgroundColor: theme.colors.green,
               paddingHorizontal: 15,
               padding: 10,
               borderRadius: 15,
