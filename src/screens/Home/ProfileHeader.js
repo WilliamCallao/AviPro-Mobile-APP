@@ -7,8 +7,8 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Local imports
-import Cascading from "../animation/CascadingFadeInView";
-import { theme } from "../assets/Theme";
+import Cascading from "../../animation/CascadingFadeInView";
+import { theme } from "../../assets/Theme";
 
 const screenWidth = Dimensions.get('window').width;
 const isCobranzaEnabled = true;

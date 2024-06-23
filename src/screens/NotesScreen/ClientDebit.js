@@ -1,17 +1,17 @@
 import React from "react";
 import { View, Dimensions, StyleSheet } from "react-native";
-import { theme } from "../assets/Theme";
+import { theme } from "../../assets/Theme";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
-import SimpleButton from "../utils/SimpleButton";
-import StyledText from "../utils/StyledText";
+import SimpleButton from "../../utils/SimpleButton";
+import StyledText from "../../utils/StyledText";
 
 const screenWidth = Dimensions.get("window").width;
 
 const ClientDebit = ({ clientInfo }) => {
   const vBalance = parseFloat(
-    (clientInfo.NotasPendientes || []).reduce(
-      (total, nota) => total + (parseFloat(nota.Saldo_pendiente) || 0),
+    (clientInfo.notas_pendientes || []).reduce(
+      (total, nota) => total + (parseFloat(nota.saldo_pendiente) || 0),
       0
     ).toFixed(2)
   );
@@ -68,4 +68,5 @@ const clientDebitStyles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
 export default ClientDebit;

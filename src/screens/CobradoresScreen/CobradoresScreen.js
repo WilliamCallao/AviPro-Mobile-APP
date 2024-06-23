@@ -3,8 +3,8 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, SafeAreaView
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { BASE_URL } from "../../config";
-import { theme } from "../assets/Theme";
+import { BASE_URL } from "../../../config";
+import { theme } from "../../assets/Theme";
 
 const CobradoresScreen = () => {
   const [empresaId, setEmpresaId] = useState(null);

@@ -8,28 +8,36 @@ import useStore from "../../stores/store";
 const windowWidth = Dimensions.get('window').width;
 
 const ClientItem = ({ client, onSelect }) => {
-  const vNombre = client.nombre; // Cambiado de client.Nombre a client.nombre
-  const vCuenta = client.cuenta; // Cambiado de client.Cuenta a client.cuenta
+  // console.log(JSON.stringify(client, null, 2));
+  const vNombre = client.nombre;
+  const vCuenta = client.cuenta;
 
-  // Asegurarse de que notas_pendientes esté definido y sea un array
   const notasPendientes = useMemo(() => Array.isArray(client.notas_pendientes) ? client.notas_pendientes : [], [client.notas_pendientes]);
   const vBalance = useMemo(() => parseFloat(notasPendientes.reduce((total, nota) => {
-    const saldoPendiente = parseFloat(nota.saldo_pendiente); // Cambiado de nota.Saldo_pendiente a nota.saldo_pendiente
+    const saldoPendiente = parseFloat(nota.saldo_pendiente);
     return total + (isNaN(saldoPendiente) ? 0 : saldoPendiente);
   }, 0).toFixed(2)), [notasPendientes]);
 
   const vNotasPendientes = notasPendientes.length;
   const pagosRealizados = useStore(state => state.pagosRealizados);
-  const [vUltimoPago, setUltimoPago] = useState("2020-06-10");
+  const [vUltimoPago, setUltimoPago] = useState(null);
 
   useEffect(() => {
-    if (pagosRealizados.length > 0) {
-      setUltimoPago(pagosRealizados.reduce((mayor, pago) => pago.fecha > mayor && pago.cuenta === client.cuenta ? pago.fecha : mayor, "2020-06-10"));
+    if (client.notas_cobradas.length > 0) {
+      const ultimoPago = client.notas_cobradas.reduce((mayor, pago) => {
+        return new Date(pago.fecha_registro) > new Date(mayor) ? pago.fecha_registro : mayor;
+      }, client.notas_cobradas[0].fecha_registro);
+      setUltimoPago(ultimoPago);
     }
-  }, [pagosRealizados, client.cuenta]);
+  }, [client.notas_cobradas]);
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   const handlePress = useCallback(() => {
-    onSelect(client.cliente_id); // Cambiado de client.cliente_ID a client.cliente_id
+    onSelect(client.cliente_id);
   }, [client.cliente_id, onSelect]);
 
   return (
@@ -59,7 +67,7 @@ const ClientItem = ({ client, onSelect }) => {
         </View>
         <View style={styles.textLine}>
           <StyledText regularText>Último Pago:</StyledText>
-          <StyledText regularText>{vUltimoPago}</StyledText>
+          <StyledText regularText>{vUltimoPago ? formatDate(vUltimoPago) : "No hay pagos"}</StyledText>
         </View>
       </View>
     </BorderBox>

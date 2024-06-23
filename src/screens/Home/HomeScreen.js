@@ -1,15 +1,15 @@
 // NewScreen.js
 import React, { useState, useEffect, useCallback } from "react";
 import { SafeAreaView, StyleSheet, View, FlatList, Text, Button } from "react-native";
-import ProfileHeader from "../components/ProfileHeader";
-import StoryItem from "../components/StoryItem";
-import { theme } from "../assets/Theme";
-import DropdownSelector from "../components/DropdownSelector";
-import Cascading from "../animation/CascadingFadeInView";
+import ProfileHeader from "./ProfileHeader";
+import StoryItem from "./StoryItem";
+import { theme } from "../../assets/Theme";
+import DropdownSelector from "../../components/DropdownSelector";
+import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
-import userStore from "../stores/userStore"; 
-import useStore from "../stores/store";
-import {db} from "../../config/firebase";
+import userStore from "../../stores/userStore"; 
+import useStore from "../../stores/store";
+import {db} from "../../../config/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import shallow from 'zustand/shallow';
 
