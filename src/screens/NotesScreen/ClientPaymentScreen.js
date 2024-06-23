@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions } from 'react-native';
+import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions, ActivityIndicator } from 'react-native';
 import { theme } from '../../assets/Theme';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -10,22 +10,39 @@ import DropdownSelector from "../../components/DropdownSelector";
 import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
 import StyledText from "../../utils/StyledText";
+import axios from 'axios';
+import { BASE_URL } from "../../../config";
+
 const windowWidth = Dimensions.get('window').width;
 
 const ClientPaymentScreen = ({ route }) => {
   const { itemClient } = route.params;
-  // console.log(JSON.stringify(itemClient, null, 2));
+  const { cuenta } = itemClient;
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('Pendientes');
-  const [clientData, setClientData] = useState(itemClient);
+  const [clientData, setClientData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const title = 'Notas';
   const OPCIONES = ['Pendientes', 'Pagadas'];
   const [animationKey, setAnimationKey] = useState(Date.now());
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/cuenta/${cuenta}`);
+      setClientData(response.data);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       setAnimationKey(Date.now());
-    }, [])
+      fetchData();
+    }, [cuenta])
   );
 
   const handleOptionChange = (option) => {
@@ -49,10 +66,6 @@ const ClientPaymentScreen = ({ route }) => {
     return item.nro_nota ? item.nro_nota.toString() : index.toString();
   };
 
-  if (!clientData) {
-    return <Text>Cargando datos...</Text>;
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerWithComponents}>
@@ -63,13 +76,13 @@ const ClientPaymentScreen = ({ route }) => {
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <View style={styles.text}>
-                <StyledText boldTextUpper>{clientData.nombre}</StyledText>
+                <StyledText boldTextUpper>{itemClient.nombre}</StyledText>
               </View>
             </View>
           </View>
         </Cascading>
         <Cascading delay={200} animationKey={animationKey}>
-          <ClientDebit clientInfo={clientData} />
+          <ClientDebit clientInfo={itemClient} />
         </Cascading>
         <Cascading delay={300} animationKey={animationKey}>
           <DropdownSelector
@@ -81,14 +94,18 @@ const ClientPaymentScreen = ({ route }) => {
         </Cascading>
       </View>
       <View style={styles.listContainer}>
-        <FlatList
-          data={selectedOption === 'Pendientes' ? clientData.notas_pendientes : clientData.notas_cobradas}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          ListHeaderComponent={<View style={{ height: 10 }} />}
-          ListFooterComponent={<View style={{ height: 10 }} />}
-          showsVerticalScrollIndicator={false}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color={theme.colors.secondary} />
+        ) : (
+          <FlatList
+            data={selectedOption === 'Pendientes' ? clientData.notas_pendientes : clientData.notas_cobradas}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            ListHeaderComponent={<View style={{ height: 10 }} />}
+            ListFooterComponent={<View style={{ height: 10 }} />}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -148,6 +165,8 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flex: 1,
+    justifyContent: 'center',
+    // alignItems: 'center',
   },
 });
 
