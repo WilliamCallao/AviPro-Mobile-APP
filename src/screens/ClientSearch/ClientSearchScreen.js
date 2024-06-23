@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { SafeAreaView, TouchableOpacity, FlatList, StyleSheet, View, Alert } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { SafeAreaView, TouchableOpacity, FlatList, StyleSheet, View, Alert, ActivityIndicator } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SearchBar from "./SearchBar";
 import ClientItem from "./ClientItem";
@@ -25,15 +25,18 @@ const ClientSearchScreen = () => {
   const [visibleItemCount, setVisibleItemCount] = useState(10);
   const [isSearching, setIsSearching] = useState(false);
   const [empresaId, setEmpresaId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchClientes = useCallback(async (empresaId) => {
     try {
+      setLoading(true);
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/con-notas`);
       setClientesConNotas(response.data);
       setFilteredData(response.data);
-      // console.log(JSON.stringify(response.data, null, 2));
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching clientes: ", error);
+      setLoading(false);
     }
   }, []);
 
@@ -62,7 +65,10 @@ const ClientSearchScreen = () => {
     useCallback(() => {
       setAnimationKey(Date.now());
       setVisibleItemCount(7);
-    }, [])
+      if (empresaId) {
+        fetchClientes(empresaId);
+      }
+    }, [empresaId, fetchClientes])
   );
 
   const handleSearch = useCallback((text) => {
@@ -146,17 +152,21 @@ const ClientSearchScreen = () => {
         </View>
       </View>
       <View style={styles.listContainer}>
-        <FlatList
-          data={filteredData.slice(0, visibleItemCount)}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          getItemLayout={getItemLayout}
-          ListHeaderComponent={<View style={{ height: 10 }} />}
-          ListFooterComponent={<View style={{ height: 10 }} />}
-          onEndReached={loadMoreItems}
-          onEndReachedThreshold={0.5}
-          showsVerticalScrollIndicator={false}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color={theme.colors.secondary} />
+        ) : (
+          <FlatList
+            data={filteredData.slice(0, visibleItemCount)}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            getItemLayout={getItemLayout}
+            ListHeaderComponent={<View style={{ height: 10 }} />}
+            ListFooterComponent={<View style={{ height: 10 }} />}
+            onEndReached={loadMoreItems}
+            onEndReachedThreshold={0.5}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -204,6 +214,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
+    justifyContent: 'center',
   },
 });
 

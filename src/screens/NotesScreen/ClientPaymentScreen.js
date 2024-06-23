@@ -166,7 +166,6 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     justifyContent: 'center',
-    // alignItems: 'center',
   },
 });
 
