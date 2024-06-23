@@ -8,6 +8,7 @@ import { theme } from "../../assets/Theme";
 
 const CobradoresScreen = () => {
   const [empresaId, setEmpresaId] = useState(null);
+  const [empresaNombre, setEmpresaNombre] = useState('');
   const [cobradores, setCobradores] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
@@ -16,7 +17,9 @@ const CobradoresScreen = () => {
     const fetchEmpresaId = async () => {
       try {
         const id = await AsyncStorage.getItem('@empresa_id');
+        const nombre = await AsyncStorage.getItem('@empresa_nombre');
         setEmpresaId(id);
+        setEmpresaNombre(nombre);
         if (id) {
           fetchCobradores(id);
         } else {
@@ -47,13 +50,13 @@ const CobradoresScreen = () => {
       await AsyncStorage.setItem('@cobrador_id', cobrador ? cobrador.cobrador_id : '');
       await AsyncStorage.setItem('@cobrador_nombre', cobrador ? cobrador.nombre : '');
 
-      // Leer los datos guardados y hacer un log para verificación
       const idEmpresa = await AsyncStorage.getItem('@empresa_id');
       const savedCobradorId = await AsyncStorage.getItem('@cobrador_id');
       const savedCobradorNombre = await AsyncStorage.getItem('@cobrador_nombre');
       console.log('Empresa ID guardado:', idEmpresa);
       console.log('Cobrador ID guardado:', savedCobradorId);
       console.log('Cobrador Nombre guardado:', savedCobradorNombre);
+
       navigation.navigate('NewScreen'); // Reemplaza 'NewScreen' con el nombre de la pantalla a la que deseas navegar.
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al guardar la información del cobrador.');
@@ -62,12 +65,11 @@ const CobradoresScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" backgroundColor={theme.colors.dark} />
+      <StatusBar style="dark" backgroundColor={theme.colors.dark} />
       <View style={styles.header}>
-        <Text style={styles.label}>ID Empresa: {empresaId}</Text>
+        <Text style={styles.title}>Información Personal</Text>
       </View>
       <View style={styles.content}>
-        <Text style={styles.instruction}>Seleccione su nombre de la lista:</Text>
         {loading ? (
           <Text style={styles.loadingText}>Cargando...</Text>
         ) : (
@@ -79,7 +81,10 @@ const CobradoresScreen = () => {
                 <View style={styles.iconWraped}>
                   <Text style={styles.initial}>{item.nombre.charAt(0)}</Text>
                 </View>
-                <Text style={styles.itemText}>{item.nombre}</Text>
+                <View style={styles.itemTextContainer}>
+                  <Text style={styles.empresaText}>{empresaNombre}</Text>
+                  <Text style={styles.itemText}>{item.nombre}</Text>
+                </View>
               </TouchableOpacity>
             )}
             ListFooterComponent={
@@ -87,11 +92,17 @@ const CobradoresScreen = () => {
                 <View style={styles.iconWraped}>
                   <Text style={styles.initial}>O</Text>
                 </View>
-                <Text style={styles.itemText}>Otro</Text>
+                <View style={styles.itemTextContainer}>
+                  <Text style={styles.empresaText}>{empresaNombre}</Text>
+                  <Text style={styles.itemText}>Otro</Text>
+                </View>
               </TouchableOpacity>
             }
           />
         )}
+        <Text style={styles.footerText}>
+          Puede cambiar esta configuración más tarde en la sección de perfil.
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -100,30 +111,23 @@ const CobradoresScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: theme.colors.secondary,
-    backgroundColor: 'orange',
+    backgroundColor: theme.colors.secondary,
   },
   header: {
-    backgroundColor: theme.colors.dark,
-    padding: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    marginTop: 50,
+    paddingTop: 20,
+    paddingBottom: 10,
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
-  label: {
-    fontSize: 20,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: theme.colors.white,
+    color: theme.colors.primaryText,
   },
   content: {
     flex: 1,
     padding: 20,
-  },
-  instruction: {
-    fontSize: 16,
-    color: theme.colors.primaryText,
-    marginBottom: 20,
-    textAlign: 'center',
   },
   item: {
     flexDirection: 'row',
@@ -133,28 +137,44 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
   },
+  itemTextContainer: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  empresaText: {
+    fontSize: 14,
+    color: theme.colors.gray,
+  },
   itemText: {
     fontSize: 18,
+    fontWeight: 'bold',
     color: theme.colors.primaryText,
-    marginLeft: 10,
+    flexWrap: 'wrap',
   },
   iconWraped: {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.tertiary,
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    borderRadius: 10,
+    width: 50,
+    height: 50, 
   },
   initial: {
-    fontSize: 20,
-    color: theme.colors.white,
+    fontSize: 24,
+    color: "white",
   },
   loadingText: {
     fontSize: 16,
     color: theme.colors.primaryText,
     textAlign: 'center',
     marginTop: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: theme.colors.gray,
+    textAlign: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
 });
 

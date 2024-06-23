@@ -1,0 +1,52 @@
+; --------------------------------------------------------------------
+; --------------------------------------------------------------------
+; --------------------------------------------------------------------
+; --------------------------------------------------------------------
+
+Resumen de Control de Disposición de Elementos
+Uso de Flexbox:
+
+Flexbox es una herramienta poderosa para controlar el diseño de los elementos dentro de un contenedor. Permite distribuir espacio y alinear elementos de manera eficiente en un contenedor flexible.
+Propiedades clave utilizadas:
+
+flexDirection: 'row': Esta propiedad se utiliza en el estilo del contenedor padre (item) para asegurar que los elementos hijos se dispongan en una fila (horizontalmente).
+alignItems: 'center': Asegura que los elementos hijos dentro de un contenedor flex se alineen verticalmente en el centro.
+flex: 1: Utilizado en el contenedor de texto (itemTextContainer) para permitir que el contenedor de texto tome todo el espacio disponible restante dentro de la fila. Esto es esencial para que el texto se ajuste correctamente sin desbordarse.
+flexShrink: 1: Permite que el contenedor de texto se reduzca si es necesario, para que se ajuste dentro del contenedor padre sin desbordarse.
+flexWrap: 'wrap': Utilizado en el contenedor padre (item) y el contenedor de texto (itemText) para permitir que los elementos se ajusten a varias líneas si el espacio horizontal disponible no es suficiente.
+Control del contenedor del texto (itemTextContainer):
+
+Añadiendo flex: 1, el contenedor de texto puede tomar todo el espacio disponible en la fila. Esto asegura que el texto se mantenga en la misma línea que la inicial, en lugar de moverse a una nueva línea.
+Usar flexShrink: 1 en combinación con flex: 1 ayuda a que el contenedor de texto se ajuste dinámicamente sin desbordarse.
+Estilo del texto (itemText):
+
+Añadir flexWrap: 'wrap' asegura que el texto se ajuste a múltiples líneas si es necesario, manteniendo el diseño limpio y evitando el desbordamiento.
+Ejemplo de cómo se aplican estas propiedades:
+javascript
+Copiar código
+const styles = StyleSheet.create({
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: theme.colors.skyBlue,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  itemTextContainer: {
+    marginLeft: 10,
+    flex: 1, // Permitir que el contenedor de texto tome el espacio disponible
+    flexShrink: 1, // Permitir que el contenedor de texto se reduzca si es necesario
+  },
+  itemText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: theme.colors.primaryText,
+    flexWrap: 'wrap', // Ajustar el texto a múltiples líneas si es necesario
+  },
+});
+
+; --------------------------------------------------------------------
+; --------------------------------------------------------------------
+; --------------------------------------------------------------------
+; --------------------------------------------------------------------
