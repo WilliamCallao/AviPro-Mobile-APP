@@ -1,10 +1,6 @@
 import React, { useState, useRef } from "react";
 import {
-  View,
-  StyleSheet,
-  Animated,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
+  View, StyleSheet, Animated, TouchableWithoutFeedback, TouchableOpacity
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -52,7 +48,7 @@ const NoteItem = ({ note, onSelect }) => {
               borderRadius: 15,
             }}
             onPress={() =>
-              navigation.navigate("SelectPaymentMethodScreen", { note, payMode: "normal" })
+              navigation.navigate("PayScreen", { note })
             }
           >
             <Icon name="money" size={30} color={"black"} />

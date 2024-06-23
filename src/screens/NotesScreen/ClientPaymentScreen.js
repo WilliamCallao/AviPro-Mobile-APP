@@ -14,7 +14,7 @@ const windowWidth = Dimensions.get('window').width;
 
 const ClientPaymentScreen = ({ route }) => {
   const { itemClient } = route.params;
-  console.log(JSON.stringify(itemClient, null, 2));
+  // console.log(JSON.stringify(itemClient, null, 2));
   const navigation = useNavigation();
   const [selectedOption, setSelectedOption] = useState('Pendientes');
   const [clientData, setClientData] = useState(itemClient);

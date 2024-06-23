@@ -12,12 +12,13 @@ import DropdownSelector from "../../components/DropdownSelector";
 import Dropdown from "./DropdownPay";
 import InputField from "../../components/InputField.js";
 import ObservationsInputField from "./ObservationsInputField";
-import { format } from "date-fns";
+import { formatDate } from "date-fns";
 
 const screenWidth = Dimensions.get("window").width;
 
-const PayScreen = ({ route }) => {
+const AutomaticPayScreen = ({ route }) => {
     const { note } = route.params;
+    console.log(JSON.stringify(note, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
@@ -39,9 +40,12 @@ const PayScreen = ({ route }) => {
 
     const [selectedCash, setSelectedCash] = useState('CTA 11101010001');
     const cash_accounts = ['CTA 11101010001', 'CTA 11101010002', 'CTA 11101020001', 'CTA 11101020002'];
-    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [selectedDate, setSelectedDate] = useState(formatDate(new Date(), 'yyyy-MM-dd'));
     const [selectedBank, setSelectedBank] = useState('FIE.CTA 6-8918');
     const banks = ['FIE.CTA 6-8918', 'BISA.CTA 4454770019', 'UNION.CTA 1-18604442', 'BNB.CTA 300017-4016', 'BISA.CTA 4454772011'];
+
+    const [selectedCriteria, setSelectedCriteria] = useState('PEPS');
+    const criteriaOptions = ['PEPS', 'UEPS', 'MayorMenor', 'MenorMayor'];
 
     const {
         control,
@@ -99,6 +103,15 @@ const PayScreen = ({ route }) => {
                         selectedOption={selectedPaymentMethod}
                         onOptionChange={handlePaymentMethodChange}
                     />
+                    <View style={{ marginTop:20 }}>
+                    <DropdownSelector
+                        title="Criterio de Cancelación"
+                        options={criteriaOptions}
+                        selectedOption={selectedCriteria}
+                        onOptionChange={setSelectedCriteria}
+                        style={styles.tertiaryDropdown}
+                    />
+                    </View>
                 </View>
             </View>
             <KeyboardAvoidingView
@@ -107,24 +120,7 @@ const PayScreen = ({ route }) => {
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <View style={styles.formContainer}>
-                        <View style={styles.noteDetails}>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Importe de la Nota:</Text>
-                                <Text style={styles.noteDetailValue}>{note.importe_nota} Bs</Text>
-                            </View>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Fecha de la Nota:</Text>
-                                <Text style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</Text>
-                            </View>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Monto Pagado:</Text>
-                                <Text style={styles.noteDetailValue}>{note.monto_pagado} Bs</Text>
-                            </View>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Saldo Pendiente:</Text>
-                                <Text style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</Text>
-                            </View>
-                        </View>
+                        <Text style={styles.saldoText}>Saldo pendiente: {note.saldo_pendiente} Bs</Text>
                         <InputWithDropdown
                             control={control}
                             name="amount"
@@ -238,24 +234,11 @@ const styles = StyleSheet.create({
         marginVertical: 20,
         justifyContent: "center",
     },
-    noteDetails: {
+    saldoText: {
+        fontSize: 18,
+        color: theme.colors.black,
         marginBottom: 20,
-        paddingHorizontal: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-    },
-    noteDetailRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 5,
-    },
-    noteDetailLabel: {
-        fontSize: 16,
-        color: "#9A9A9A",
-    },
-    noteDetailValue: {
-        fontSize: 16,
-        color: "#9A9A9A",
+        textAlign: 'center',
     },
     buttonContainer: {
         paddingHorizontal: 20,
@@ -283,4 +266,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PayScreen;
+export default AutomaticPayScreen;
