@@ -35,6 +35,7 @@ const PayScreen = ({ route }) => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
     const handlePaymentMethodChange = (option) => {
         setSelectedPaymentMethod(option);
+        setAnimationKey(Date.now());
     };
 
     const [selectedCash, setSelectedCash] = useState('CTA 11101010001');
@@ -93,101 +94,120 @@ const PayScreen = ({ route }) => {
                             </View>
                         </View>
                     </Cascading>
-                    <DropdownSelector
-                        title="Deposito"
-                        options={['efectivo', 'banco', 'cheque']}
-                        selectedOption={selectedPaymentMethod}
-                        onOptionChange={handlePaymentMethodChange}
-                    />
+                    <Cascading delay={200} animationKey={animationKey}>
+                        <DropdownSelector
+                            title="Deposito"
+                            options={['efectivo', 'banco', 'cheque']}
+                            selectedOption={selectedPaymentMethod}
+                            onOptionChange={handlePaymentMethodChange}
+                        />
+                    </Cascading>
                 </View>
             </View>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : null}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <View style={styles.formContainer}>
-                        <View style={styles.noteDetails}>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Importe de la Nota:</Text>
-                                <Text style={styles.noteDetailValue}>{note.importe_nota} Bs</Text>
+                        <Cascading delay={300} animationKey={animationKey}>
+                            <View style={styles.noteDetails}>
+                                <View style={styles.noteDetailRow}>
+                                    <Text style={styles.noteDetailLabel}>Importe de la Nota:</Text>
+                                    <Text style={styles.noteDetailValue}>{note.importe_nota} Bs</Text>
+                                </View>
+                                <View style={styles.noteDetailRow}>
+                                    <Text style={styles.noteDetailLabel}>Fecha de la Nota:</Text>
+                                    <Text style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</Text>
+                                </View>
+                                <View style={styles.noteDetailRow}>
+                                    <Text style={styles.noteDetailLabel}>Monto Pagado:</Text>
+                                    <Text style={styles.noteDetailValue}>{note.monto_pagado} Bs</Text>
+                                </View>
+                                <View style={styles.noteDetailRow}>
+                                    <Text style={styles.noteDetailLabel}>Saldo Pendiente:</Text>
+                                    <Text style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</Text>
+                                </View>
                             </View>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Fecha de la Nota:</Text>
-                                <Text style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</Text>
-                            </View>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Monto Pagado:</Text>
-                                <Text style={styles.noteDetailValue}>{note.monto_pagado} Bs</Text>
-                            </View>
-                            <View style={styles.noteDetailRow}>
-                                <Text style={styles.noteDetailLabel}>Saldo Pendiente:</Text>
-                                <Text style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</Text>
-                            </View>
-                        </View>
-                        <InputWithDropdown
-                            control={control}
-                            name="amount"
-                            title="Importe pagado"
-                            type="numeric"
-                            rules={{
-                                required: "Este campo es requerido",
-                                validate: value => parseFloat(value) <= note.saldo_pendiente || "El monto excede el saldo pendiente",
-                                pattern: {
-                                    value: /^[0-9]+([.][0-9]{0,2})?$/,
-                                    message: "Ingrese solo números",
-                                },
-                            }}
-                            errors={errors}
-                            selectedCurrency={selectedCurrency}
-                            handleCurrencyChange={handleCurrencyChange}
-                        />
+                        </Cascading>
+                        <Cascading delay={400} animationKey={animationKey}>
+                            <InputWithDropdown
+                                control={control}
+                                name="amount"
+                                title="Importe pagado"
+                                type="numeric"
+                                rules={{
+                                    required: "Este campo es requerido",
+                                    validate: value => parseFloat(value) <= note.saldo_pendiente || "El monto excede el saldo pendiente",
+                                    pattern: {
+                                        value: /^[0-9]+([.][0-9]{0,2})?$/,
+                                        message: "Ingrese solo números",
+                                    },
+                                }}
+                                errors={errors}
+                                selectedCurrency={selectedCurrency}
+                                handleCurrencyChange={handleCurrencyChange}
+                            />
+                        </Cascading>
                         {selectedPaymentMethod === 'efectivo' &&
-                            <Dropdown
-                                title="Cta/Caja Banco"
-                                options={cash_accounts}
-                                selectedOption={selectedCash}
-                                onOptionChange={setSelectedCash}
-                            />}
+                            <Cascading delay={480} animationKey={animationKey}>
+                                <Dropdown
+                                    title="Cta/Caja Banco"
+                                    options={cash_accounts}
+                                    selectedOption={selectedCash}
+                                    onOptionChange={setSelectedCash}
+                                />
+                            </Cascading>}
                         {selectedPaymentMethod === 'banco' &&
-                            <Dropdown
-                                title="Cta/Caja Banco"
-                                options={banks}
-                                selectedOption={selectedBank}
-                                onOptionChange={setSelectedBank}
-                            />}
+                            <Cascading delay={480} animationKey={animationKey}>
+                                <Dropdown
+                                    title="Cta/Caja Banco"
+                                    options={banks}
+                                    selectedOption={selectedBank}
+                                    onOptionChange={setSelectedBank}
+                                />
+                            </Cascading>}
                         {selectedPaymentMethod === 'cheque' &&
-                            <DateInputField
-                                control={control}
-                                name="checkBankDate"
-                                title="Fecha Cheque"
-                                callThrough={setSelectedDate}
-                                isEditable={true}
-                            />}
+                            <Cascading delay={480} animationKey={animationKey}>
+                                <DateInputField
+                                    control={control}
+                                    name="checkBankDate"
+                                    title="Fecha Cheque"
+                                    callThrough={setSelectedDate}
+                                    isEditable={true}
+                                />
+                            </Cascading>}
                         {selectedPaymentMethod === 'cheque' &&
-                            <InputField
+                            <Cascading delay={500} animationKey={animationKey}>
+                                <InputField
+                                    control={control}
+                                    name="reference"
+                                    title="Referencia"
+                                    type="default"
+                                />
+                            </Cascading>}
+                        <Cascading delay={560} animationKey={animationKey}>
+                            <ObservationsInputField
                                 control={control}
-                                name="reference"
-                                title="Referencia"
-                                type="default"
-                            />}
-                        <ObservationsInputField
-                            control={control}
-                            name="observations"
-                            title="Observaciones"
-                            rules={{}}
-                            errors={errors}
-                        />
+                                name="observations"
+                                title="Observaciones"
+                                rules={{}}
+                                errors={errors}
+                            />
+                        </Cascading>
+                        <Cascading delay={700} animationKey={animationKey}>
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={handleSubmit(modalConfirmacion)}
+                                >
+                                    <Text style={styles.buttonText}>Registrar Pago</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </Cascading>
                     </View>
                 </ScrollView>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={handleSubmit(modalConfirmacion)}
-                    >
-                        <Text style={styles.buttonText}>Registrar Pago</Text>
-                    </TouchableOpacity>
-                </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
     )
@@ -264,7 +284,6 @@ const styles = StyleSheet.create({
     button: {
         justifyContent: "center",
         alignItems: "center",
-        elevation: 5,
         paddingVertical: 12,
         backgroundColor: theme.colors.tertiary,
         borderRadius: 22,
