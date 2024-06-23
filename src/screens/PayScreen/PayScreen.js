@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Alert, SafeAreaView, StyleSheet, Text, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform } from 'react-native';
 import { useForm } from "react-hook-form";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -13,6 +13,8 @@ import Dropdown from "./DropdownPay";
 import InputField from "../../components/InputField.js";
 import ObservationsInputField from "./ObservationsInputField";
 import { format } from "date-fns";
+import axios from 'axios';
+import { BASE_URL } from '../../../config';
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -21,28 +23,45 @@ const PayScreen = ({ route }) => {
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
+    const [cashAccounts, setCashAccounts] = useState([]);
+    const [bankAccounts, setBankAccounts] = useState([]);
+    const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
+    const [selectedCash, setSelectedCash] = useState('');
+    const [selectedBank, setSelectedBank] = useState('');
+    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/api/mobile/cuentas-deposito/empresa/${note.empresa_id}`);
+                const cuentas = response.data;
+                setCashAccounts(cuentas.filter(c => c.tipo === 'E').map(c => c.descripcion));
+                setBankAccounts(cuentas.filter(c => c.tipo === 'B').map(c => c.descripcion));
+                setSelectedCash(cuentas.filter(c => c.tipo === 'E')[0]?.descripcion || '');
+                setSelectedBank(cuentas.filter(c => c.tipo === 'B')[0]?.descripcion || '');
+            } catch (error) {
+                console.error("Error fetching deposit accounts: ", error);
+            }
+        };
+
+        fetchAccounts();
+    }, [note.empresa_id]);
+
     useFocusEffect(
         useCallback(() => {
             setAnimationKey(Date.now());
         }, [])
     );
 
-    const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
     const handleCurrencyChange = (option) => {
         setSelectedCurrency(option);
     };
 
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
     const handlePaymentMethodChange = (option) => {
         setSelectedPaymentMethod(option);
         setAnimationKey(Date.now());
     };
-
-    const [selectedCash, setSelectedCash] = useState('CTA 11101010001');
-    const cash_accounts = ['CTA 11101010001', 'CTA 11101010002', 'CTA 11101020001', 'CTA 11101020002'];
-    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-    const [selectedBank, setSelectedBank] = useState('FIE.CTA 6-8918');
-    const banks = ['FIE.CTA 6-8918', 'BISA.CTA 4454770019', 'UNION.CTA 1-18604442', 'BNB.CTA 300017-4016', 'BISA.CTA 4454772011'];
 
     const {
         control,
@@ -154,7 +173,7 @@ const PayScreen = ({ route }) => {
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={cash_accounts}
+                                    options={cashAccounts}
                                     selectedOption={selectedCash}
                                     onOptionChange={setSelectedCash}
                                 />
@@ -163,7 +182,7 @@ const PayScreen = ({ route }) => {
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={banks}
+                                    options={bankAccounts}
                                     selectedOption={selectedBank}
                                     onOptionChange={setSelectedBank}
                                 />
