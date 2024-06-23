@@ -56,7 +56,7 @@ const ProfileHeader = () => {
       await AsyncStorage.removeItem('@cobrador_id');
       await AsyncStorage.removeItem('@cobrador_nombre');
       Alert.alert('Éxito', 'Datos borrados exitosamente');
-      setUserName('Usuario'); // Restablecer el nombre de usuario a "Usuario"
+      setUserName('Usuario');
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al borrar los datos.');
     }
@@ -66,7 +66,7 @@ const ProfileHeader = () => {
     <View style={styles.maxContainer}>
       <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       <Cascading delay={100} animationKey={animationKey}>
-        <TouchableOpacity style={styles.accountContainer} onPress={() => navigation.navigate("ProfileScreen", {username: userName})}>
+        <TouchableOpacity style={styles.accountContainer} onPress={() => navigation.navigate("CobradoresScreen", {username: userName})}>
           <View style={styles.letter}>
             <Text style={styles.initialLetter}>{userName[0]}</Text>
           </View>
@@ -122,9 +122,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: theme.colors.skyBlue,
     marginHorizontal: 20,
-    padding: 5,
+    padding: 10,
     borderRadius: 20,
     marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   letter: {
     backgroundColor: theme.colors.tertiary,
@@ -140,6 +142,7 @@ const styles = StyleSheet.create({
   },
   info: {
     marginLeft: 10,
+    flex: 1,
   },
   welcomeText: {
     color: theme.colors.primaryText,
@@ -150,6 +153,8 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryText,
     fontSize: 17,
     fontWeight: 'bold',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -161,8 +166,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     backgroundColor: theme.colors.skyBlue,
     borderRadius: 20,
-    width: screenWidth*0.25,
-    height: screenWidth*0.22,
+    width: screenWidth * 0.25,
+    height: screenWidth * 0.22,
     flex: 1,
     marginHorizontal: 10,
     justifyContent: 'flex-end',
