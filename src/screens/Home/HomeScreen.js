@@ -1,61 +1,18 @@
-// NewScreen.js
-import React, { useState, useEffect, useCallback } from "react";
-import { SafeAreaView, StyleSheet, View, FlatList, Text, Button } from "react-native";
+import React, { useState, useCallback } from "react";
+import { SafeAreaView, StyleSheet, View, FlatList } from "react-native";
 import ProfileHeader from "./ProfileHeader";
 import StoryItem from "./StoryItem";
 import { theme } from "../../assets/Theme";
 import DropdownSelector from "../../components/DropdownSelector";
 import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
-import userStore from "../../stores/userStore"; 
-import useStore from "../../stores/store";
-import {db} from "../../../config/firebase";
-import { doc, getDoc } from 'firebase/firestore';
-import shallow from 'zustand/shallow';
 
 const NewScreen = () => {
   const [selectedOption, setSelectedOption] = useState("Hoy");
   const OPCIONES = ['Hoy', 'Esta Semana', 'Este Mes', 'Todo'];
   const title = 'Actividad';
-  const { clientes, notasPendientes, clientesConNotas, subscribeToData } = useStore(state => ({
-    clientes: state.clientes,
-    notasPendientes: state.notasPendientes,
-    subscribeToData: state.subscribeToData,
-    clientesConNotas: state.clientesConNotas,
-  }));
-  const {user, setUser} = userStore(state =>({
-    user: state.user,
-    setUser: state.setUser
-  })
-  );
-  const [nombreF, setNombreF] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = subscribeToData();
-    return () => unsubscribe();
-  }, [subscribeToData]);
-  
-  useEffect(() => {
-    if(!user || !user.idDoc){ 
-      console.log('Usuario no definido o ID de documento no definido.');
-      return;
-    }else{
-    const docRef = doc(db, 'cobradores', user.idDoc);
-    const fetchUserData = async () => {
-      try{
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          console.log('Document data:', docSnap.data());  //raro porque sin esto no funciona
-          const data = docSnap.data();
-          const {nombre} = data;
-          setNombreF(nombre);
-        } else {
-      }}catch(e){
-        console.error("Error al obtener documento: ", e);
-      }
-    };
-    fetchUserData();}
-  },[user?.idDoc, user?.nombre]);
+  const nombreF = "Usuario Predeterminado";
 
   const HISTORY_DATA = [
     {
@@ -92,33 +49,6 @@ const NewScreen = () => {
     setSelectedOption(option);
   };
 
-  const logClientesConNotas = () => {
-    const { clientesConNotas } = useStore.getState();
-    
-    if (clientesConNotas.length === 0) {
-      console.log("No hay datos combinados para mostrar.");
-      return;
-    }
-  
-    // clientesConNotas.forEach(cliente => {
-    //   console.log(`Cliente: ${cliente.Nombre} - Cuenta: ${cliente.Cuenta}`);
-    //   if (cliente.NotasPendientes && cliente.NotasPendientes.length > 0) {
-    //     console.log('  Notas Pendientes:');
-    //     cliente.NotasPendientes.forEach(nota => {
-    //       console.log(`    Nota: ${nota.nro_nota}, Importe: ${nota.importe_nota}, Saldo: ${nota.Saldo_pendiente}`);
-    //     });
-    //   } else {
-    //     console.log('  No hay notas pendientes para este cliente.');
-    //   }
-    // });
-  
-    console.log(JSON.stringify(clientesConNotas, null, 2));
-  };
-
-  const logClientes = () => console.log("Clientes:", clientes);
-  const logNotasPendientes = () => console.log("Notas Pendientes:", notasPendientes);
-
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -132,14 +62,6 @@ const NewScreen = () => {
           />
         </Cascading>
       </View>
-      {/* <View style={{ flexDirection: 'row', justifyContent: 'space-around', padding: 20 }}>
-        <Button title="Log Clientes" onPress={logClientes} />
-        <Button title="Log Notas" onPress={logNotasPendientes} />
-        <Button title="Combinar" onPress={() => {
-          useStore.getState().combinarClientesConNotas();
-          setTimeout(logClientesConNotas, 0);
-        }} />
-      </View> */}
       <View style={styles.listContainer}>
         <FlatList
           data={HISTORY_DATA}
