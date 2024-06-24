@@ -38,8 +38,8 @@ const PayScreen = ({ route }) => {
                 const response = await axios.get(`${BASE_URL}/api/mobile/cuentas-deposito/empresa/${note.empresa_id}`);
                 const cuentas = response.data;
                 console.log(JSON.stringify(cuentas, null, 2));
-                setCashAccounts(cuentas.filter(c => c.tipo === 'E').map(c => c.descripcion));
-                setBankAccounts(cuentas.filter(c => c.tipo === 'B').map(c => c.descripcion));
+                setCashAccounts(cuentas.filter(c => c.tipo === 'E').map(c => ({ descripcion: c.descripcion, cuenta: c.cuenta })));
+                setBankAccounts(cuentas.filter(c => c.tipo === 'B').map(c => ({ descripcion: c.descripcion, cuenta: c.cuenta })));
                 setSelectedCash(cuentas.filter(c => c.tipo === 'E')[0]?.descripcion || '');
                 setSelectedBank(cuentas.filter(c => c.tipo === 'B')[0]?.descripcion || '');
             } catch (error) {
@@ -93,8 +93,33 @@ const PayScreen = ({ route }) => {
         ]);
 
     const onSubmit = async (data) => {
+        const getAccountNumber = (description, accounts) => {
+            const account = accounts.find(a => a.descripcion === description);
+            return account ? account.cuenta : '';
+        };
+
+        const commonData = {
+            empresa_id: note.empresa_id,
+            sucursal_id: note.sucursal_id,
+            cuenta: note.cuenta,
+            pago_a_nota: note.nro_nota,
+            monto: parseFloat(data.amount),
+            moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
+            modo_pago: selectedPaymentMethod === 'cheque' ? 'B' : selectedPaymentMethod[0].toUpperCase(),
+            cta_deposito: selectedPaymentMethod === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
+            observaciones: data.observations || null,
+            fecha_registro: new Date()
+        };
+
+        if (selectedPaymentMethod === 'cheque') {
+            commonData.fecha = selectedDate;
+            commonData.referencia = data.reference || null;
+        }
+
         try {
-            const response = await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
+            await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/register`, commonData);
+
+            await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
                 monto_pagado: parseFloat(data.amount)
             });
 
@@ -184,7 +209,7 @@ const PayScreen = ({ route }) => {
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={cashAccounts}
+                                    options={cashAccounts.map(c => c.descripcion)}
                                     selectedOption={selectedCash}
                                     onOptionChange={setSelectedCash}
                                 />
@@ -193,7 +218,7 @@ const PayScreen = ({ route }) => {
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={bankAccounts}
+                                    options={bankAccounts.map(c => c.descripcion)}
                                     selectedOption={selectedBank}
                                     onOptionChange={setSelectedBank}
                                 />
