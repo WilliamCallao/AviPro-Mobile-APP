@@ -20,6 +20,7 @@ const screenWidth = Dimensions.get("window").width;
 
 const PayScreen = ({ route }) => {
     const { note } = route.params;
+    console.log(JSON.stringify(note, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
@@ -36,6 +37,7 @@ const PayScreen = ({ route }) => {
             try {
                 const response = await axios.get(`${BASE_URL}/api/mobile/cuentas-deposito/empresa/${note.empresa_id}`);
                 const cuentas = response.data;
+                console.log(JSON.stringify(cuentas, null, 2));
                 setCashAccounts(cuentas.filter(c => c.tipo === 'E').map(c => c.descripcion));
                 setBankAccounts(cuentas.filter(c => c.tipo === 'B').map(c => c.descripcion));
                 setSelectedCash(cuentas.filter(c => c.tipo === 'E')[0]?.descripcion || '');
@@ -90,9 +92,18 @@ const PayScreen = ({ route }) => {
             { text: 'Continuar', onPress: () => { onSubmit(data) } },
         ]);
 
-    const onSubmit = (data) => {
-        console.log('Data:', data);
-        navigation.goBack();
+    const onSubmit = async (data) => {
+        try {
+            const response = await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
+                monto_pagado: parseFloat(data.amount)
+            });
+
+            Alert.alert('Éxito', 'El pago ha sido registrado correctamente');
+            navigation.goBack();
+        } catch (error) {
+            console.error('Error updating note:', error);
+            Alert.alert('Error', 'Ocurrió un error al registrar el pago');
+        }
     };
 
     return (
