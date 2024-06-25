@@ -73,12 +73,6 @@ const clientDebitStyles = StyleSheet.create({
     padding: 10,
     width: screenWidth * 0.4,
   },
-  textButton: {
-    color: theme.colors.primary,
-    fontSize: 16,
-    alignSelf: "center",
-    fontWeight: "bold",
-  },
 });
 
 export default ClientDebit;
