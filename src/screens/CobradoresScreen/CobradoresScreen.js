@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, StyleSheet, Alert, SafeAreaView } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, Alert, SafeAreaView, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -72,7 +72,7 @@ const CobradoresScreen = () => {
       </View>
       <View style={styles.content}>
         {loading ? (
-          <StyledText regularText style={styles.loadingText}>Cargando...</StyledText>
+          <ActivityIndicator size="large" color={theme.colors.black} style={styles.loader} />
         ) : (
           <FlatList
             data={cobradores}
@@ -101,7 +101,7 @@ const CobradoresScreen = () => {
             }
           />
         )}
-        <StyledText regularText style={styles.footerText}>
+        <StyledText regularBlackText style={styles.footerText}>
           Puede cambiar esta configuración más tarde en la sección de perfil.
         </StyledText>
       </View>
@@ -155,9 +155,10 @@ const styles = StyleSheet.create({
   initial: {
     color: "white",
   },
-  loadingText: {
-    textAlign: 'center',
-    marginTop: 20,
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   footerText: {
     textAlign: 'center',
