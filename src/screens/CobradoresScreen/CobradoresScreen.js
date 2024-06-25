@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, SafeAreaView } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, Alert, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { BASE_URL } from "../../../config";
 import { theme } from "../../assets/Theme";
+import StyledText from "../../utils/StyledText";
 
 const CobradoresScreen = () => {
   const [empresaId, setEmpresaId] = useState(null);
@@ -57,7 +58,7 @@ const CobradoresScreen = () => {
       console.log('Cobrador ID guardado:', savedCobradorId);
       console.log('Cobrador Nombre guardado:', savedCobradorNombre);
 
-      navigation.navigate('NewScreen'); // Reemplaza 'NewScreen' con el nombre de la pantalla a la que deseas navegar.
+      navigation.navigate('NewScreen');
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al guardar la información del cobrador.');
     }
@@ -67,11 +68,11 @@ const CobradoresScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" backgroundColor={theme.colors.dark} />
       <View style={styles.header}>
-        <Text style={styles.title}>Información Personal</Text>
+        <StyledText boldTextUpper style={styles.title}>Información Personal</StyledText>
       </View>
       <View style={styles.content}>
         {loading ? (
-          <Text style={styles.loadingText}>Cargando...</Text>
+          <StyledText regularText style={styles.loadingText}>Cargando...</StyledText>
         ) : (
           <FlatList
             data={cobradores}
@@ -79,30 +80,30 @@ const CobradoresScreen = () => {
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.item} onPress={() => handleSelectCobrador(item)}>
                 <View style={styles.iconWraped}>
-                  <Text style={styles.initial}>{item.nombre.charAt(0)}</Text>
+                  <StyledText initial>{item.nombre.charAt(0)}</StyledText>
                 </View>
                 <View style={styles.itemTextContainer}>
-                  <Text style={styles.empresaText}>{empresaNombre}</Text>
-                  <Text style={styles.itemText}>{item.nombre}</Text>
+                  <StyledText regularBlackText style={styles.empresaText}>{empresaNombre}</StyledText>
+                  <StyledText boldText style={styles.itemText}>{item.nombre}</StyledText>
                 </View>
               </TouchableOpacity>
             )}
             ListFooterComponent={
               <TouchableOpacity style={styles.item} onPress={() => handleSelectCobrador(null)}>
                 <View style={styles.iconWraped}>
-                  <Text style={styles.initial}>O</Text>
+                  <StyledText initial>O</StyledText>
                 </View>
                 <View style={styles.itemTextContainer}>
-                  <Text style={styles.empresaText}>{empresaNombre}</Text>
-                  <Text style={styles.itemText}>Otro</Text>
+                  <StyledText regularBlackText style={styles.empresaText}>{empresaNombre}</StyledText>
+                  <StyledText boldText style={styles.itemText}>Otro</StyledText>
                 </View>
               </TouchableOpacity>
             }
           />
         )}
-        <Text style={styles.footerText}>
+        <StyledText regularText style={styles.footerText}>
           Puede cambiar esta configuración más tarde en la sección de perfil.
-        </Text>
+        </StyledText>
       </View>
     </SafeAreaView>
   );
@@ -121,9 +122,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.primaryText,
   },
   content: {
     flex: 1,
@@ -142,13 +140,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   empresaText: {
-    fontSize: 14,
-    color: theme.colors.gray,
   },
   itemText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.primaryText,
     flexWrap: 'wrap',
   },
   iconWraped: {
@@ -160,18 +153,13 @@ const styles = StyleSheet.create({
     height: 50, 
   },
   initial: {
-    fontSize: 24,
     color: "white",
   },
   loadingText: {
-    fontSize: 16,
-    color: theme.colors.primaryText,
     textAlign: 'center',
     marginTop: 20,
   },
   footerText: {
-    fontSize: 14,
-    color: theme.colors.gray,
     textAlign: 'center',
     marginTop: 20,
     paddingHorizontal: 20,
