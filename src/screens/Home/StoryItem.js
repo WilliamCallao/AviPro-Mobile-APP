@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { theme } from "../../assets/Theme";
 import moment from 'moment';
+import StyledText from "../../utils/StyledText";
 
 const StoryItem = ({ story }) => {
   const dateTime = moment(`${story.fecha}T${story.hora}`);
@@ -10,14 +11,14 @@ const StoryItem = ({ story }) => {
 
   return (
     <View style={styles.container}>
+        {/* <StyledText regularBlackText style={styles.type}>Nota Cobrada</StyledText> */}
       <View style={styles.dateContainer}>
-        <Text style={styles.date}>{formattedDate}</Text>
-        <Text style={styles.time}>{formattedTime}</Text>
+        <StyledText regularText style={styles.date}>{formattedDate}</StyledText>
+        <StyledText regularText style={styles.time}>{formattedTime}</StyledText>
       </View>
       <View style={styles.infoContainer}>
-        <Text style={styles.type}>Nota Cobrada</Text>
-        <Text style={styles.name}>{story.nombre_cliente}</Text>
-        <Text style={styles.amount}>{story.monto} Bs</Text>
+        <StyledText regularText style={styles.name}>{story.nombre_cliente}</StyledText>
+        <StyledText regularText style={styles.amount}>{story.monto} Bs</StyledText>
       </View>
     </View>
   );
@@ -30,9 +31,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     paddingVertical: 15,
     paddingHorizontal: 20,
-    marginVertical: 5,
+    marginVertical: 10,
     marginHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: theme.colors.otherWhite,
   },
@@ -47,30 +48,18 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   type: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: theme.colors.secondaryText,
     marginBottom: 2,
   },
   name: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.primaryText,
+    // color: theme.colors.primaryText,
   },
   amount: {
-    fontSize: 15,
-    fontWeight: "700",
     color: theme.colors.primaryText,
   },
   date: {
-    fontSize: 14,
-    color: theme.colors.secondaryText,
     marginBottom: 2,
   },
-  time: {
-    fontSize: 14,
-    color: theme.colors.secondaryText,
-  },
+  time: {},
 });
 
 export default StoryItem;

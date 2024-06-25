@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform } from 'react-native';
 import { useForm } from "react-hook-form";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,12 +16,12 @@ import { format } from "date-fns";
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import StyledText from "../../utils/StyledText";
 
 const screenWidth = Dimensions.get("window").width;
 
 const PayScreen = ({ route }) => {
     const { note } = route.params;
-    console.log(JSON.stringify(note, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
@@ -39,7 +39,6 @@ const PayScreen = ({ route }) => {
             try {
                 const response = await axios.get(`${BASE_URL}/api/mobile/cuentas-deposito/empresa/${note.empresa_id}`);
                 const cuentas = response.data;
-                console.log(JSON.stringify(cuentas, null, 2));
                 setCashAccounts(cuentas.filter(c => c.tipo === 'E').map(c => ({ descripcion: c.descripcion, cuenta: c.cuenta })));
                 setBankAccounts(cuentas.filter(c => c.tipo === 'B').map(c => ({ descripcion: c.descripcion, cuenta: c.cuenta })));
                 setSelectedCash(cuentas.filter(c => c.tipo === 'E')[0]?.descripcion || '');
@@ -170,7 +169,7 @@ const PayScreen = ({ route }) => {
                                 <Icon name="back" size={30} color="black" />
                             </TouchableOpacity>
                             <View style={styles.aviContainer}>
-                                <Text style={styles.clientName}>{clientName}</Text>
+                                <StyledText boldText style={styles.clientName}>{clientName}</StyledText>
                             </View>
                         </View>
                     </Cascading>
@@ -194,20 +193,20 @@ const PayScreen = ({ route }) => {
                         <Cascading delay={300} animationKey={animationKey}>
                             <View style={styles.noteDetails}>
                                 <View style={styles.noteDetailRow}>
-                                    <Text style={styles.noteDetailLabel}>Importe de la Nota:</Text>
-                                    <Text style={styles.noteDetailValue}>{note.importe_nota} Bs</Text>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Importe de la Nota:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{note.importe_nota} Bs</StyledText>
                                 </View>
                                 <View style={styles.noteDetailRow}>
-                                    <Text style={styles.noteDetailLabel}>Fecha de la Nota:</Text>
-                                    <Text style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</Text>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Fecha de la Nota:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</StyledText>
                                 </View>
                                 <View style={styles.noteDetailRow}>
-                                    <Text style={styles.noteDetailLabel}>Monto Pagado:</Text>
-                                    <Text style={styles.noteDetailValue}>{note.monto_pagado} Bs</Text>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Monto Pagado:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{note.monto_pagado} Bs</StyledText>
                                 </View>
                                 <View style={styles.noteDetailRow}>
-                                    <Text style={styles.noteDetailLabel}>Saldo Pendiente:</Text>
-                                    <Text style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</Text>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Saldo Pendiente:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</StyledText>
                                 </View>
                             </View>
                         </Cascading>
@@ -282,7 +281,7 @@ const PayScreen = ({ route }) => {
                                     style={styles.button}
                                     onPress={handleSubmit(modalConfirmacion)}
                                 >
-                                    <Text style={styles.buttonText}>Registrar Pago</Text>
+                                    <StyledText buttonText>Registrar Pago</StyledText>
                                 </TouchableOpacity>
                             </View>
                         </Cascading>
@@ -330,10 +329,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     clientName: {
-        fontSize: 18,
-        fontWeight: 'bold',
         textAlign: 'center',
-        color: theme.colors.tertiary,
     },
     formContainer: {
         flex: 1,
@@ -353,11 +349,9 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     noteDetailLabel: {
-        fontSize: 16,
         color: "#9A9A9A",
     },
     noteDetailValue: {
-        fontSize: 16,
         color: "#9A9A9A",
     },
     buttonContainer: {
@@ -371,17 +365,6 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.tertiary,
         borderRadius: 22,
         width: '100%',
-    },
-    buttonText: {
-        color: theme.colors.primary,
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-    tertiaryDropdown: {
-        backgroundColor: theme.colors.tertiary,
-        borderRadius: 10,
-        marginTop: 10,
-        padding: 5,
     },
 });
 
