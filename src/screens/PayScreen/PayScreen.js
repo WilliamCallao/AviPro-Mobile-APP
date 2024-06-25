@@ -15,6 +15,7 @@ import ObservationsInputField from "./ObservationsInputField";
 import { format } from "date-fns";
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -31,6 +32,7 @@ const PayScreen = ({ route }) => {
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [clientName, setClientName] = useState('');
 
     useEffect(() => {
         const fetchAccounts = async () => {
@@ -47,8 +49,19 @@ const PayScreen = ({ route }) => {
             }
         };
 
+        const fetchClientName = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${note.empresa_id}/cuenta/${note.cuenta}`);
+                const cliente = response.data;
+                setClientName(cliente.nombre);
+            } catch (error) {
+                console.error("Error fetching client name: ", error);
+            }
+        };
+
         fetchAccounts();
-    }, [note.empresa_id]);
+        fetchClientName();
+    }, [note.empresa_id, note.cuenta]);
 
     useFocusEffect(
         useCallback(() => {
@@ -106,10 +119,13 @@ const PayScreen = ({ route }) => {
             monto: parseFloat(data.amount),
             moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
             modo_pago: selectedPaymentMethod === 'cheque' ? 'B' : selectedPaymentMethod[0].toUpperCase(),
-            cta_deposito: selectedPaymentMethod === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
             observaciones: data.observations || null,
             fecha_registro: new Date()
         };
+
+        if (selectedPaymentMethod === 'efectivo' || selectedPaymentMethod === 'banco') {
+            commonData.cta_deposito = selectedPaymentMethod === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts);
+        }
 
         if (selectedPaymentMethod === 'cheque') {
             commonData.fecha = selectedDate;
@@ -117,10 +133,19 @@ const PayScreen = ({ route }) => {
         }
 
         try {
+            const name = await AsyncStorage.getItem('@cobrador_id');
             await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/register`, commonData);
 
             await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
                 monto_pagado: parseFloat(data.amount)
+            });
+
+            // Registrar el pago en el historial
+            await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, {
+                empresa_id: note.empresa_id,
+                cobrador_id: name,
+                nombre_cliente: clientName,
+                monto: parseFloat(data.amount)
             });
 
             Alert.alert('Éxito', 'El pago ha sido registrado correctamente');
@@ -145,7 +170,7 @@ const PayScreen = ({ route }) => {
                                 <Icon name="back" size={30} color="black" />
                             </TouchableOpacity>
                             <View style={styles.aviContainer}>
-                                <Text style={styles.avi}>Pago de Nota</Text>
+                                <Text style={styles.clientName}>{clientName}</Text>
                             </View>
                         </View>
                     </Cascading>
@@ -304,8 +329,11 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    avi: {
-        marginRight: 40,
+    clientName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: theme.colors.tertiary,
     },
     formContainer: {
         flex: 1,
