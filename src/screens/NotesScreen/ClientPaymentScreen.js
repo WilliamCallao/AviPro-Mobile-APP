@@ -83,7 +83,7 @@ const ClientPaymentScreen = ({ route }) => {
           </View>
         </Cascading>
         <Cascading delay={200} animationKey={animationKey}>
-          <ClientDebit clientInfo={itemClient} />
+          <ClientDebit clientInfo={clientData} />
         </Cascading>
         <Cascading delay={300} animationKey={animationKey}>
           <DropdownSelector

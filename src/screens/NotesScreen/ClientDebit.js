@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Dimensions, StyleSheet } from "react-native";
+import { View, Dimensions, StyleSheet, ActivityIndicator } from "react-native";
 import { theme } from "../../assets/Theme";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
@@ -9,18 +9,27 @@ import StyledText from "../../utils/StyledText";
 const screenWidth = Dimensions.get("window").width;
 
 const ClientDebit = ({ clientInfo }) => {
-  const vBalance = parseFloat(
-    (clientInfo.notas_pendientes || []).reduce(
-      (total, nota) => total + (parseFloat(nota.saldo_pendiente) || 0),
-      0
-    ).toFixed(2)
-  );
   const navigation = useNavigation();
+
+  const vBalance = clientInfo
+    ? parseFloat(
+        (clientInfo.notas_pendientes || []).reduce(
+          (total, nota) => total + (parseFloat(nota.saldo_pendiente) || 0),
+          0
+        ).toFixed(2)
+      )
+    : null;
 
   return (
     <View style={clientDebitStyles.container}>
       <StatusBar style="light" backgroundColor={theme.colors.secondary} />
-      <StyledText balance style={clientDebitStyles.text}> {vBalance} Bs</StyledText>
+      {clientInfo === null ? (
+        <ActivityIndicator size="large" color={theme.colors.black} style={clientDebitStyles.loader} />
+      ) : (
+        <StyledText balance style={clientDebitStyles.text}>
+          {vBalance} Bs
+        </StyledText>
+      )}
       <View style={clientDebitStyles.spaceButtons}>
         <SimpleButton
           text="Automático"
@@ -53,6 +62,9 @@ const clientDebitStyles = StyleSheet.create({
   },
   text: {
     padding: 15,
+  },
+  loader: {
+    padding: 18,
   },
   button: {
     backgroundColor: theme.colors.tertiary,
