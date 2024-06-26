@@ -75,14 +75,13 @@ const SimpleScreen = () => {
       <View style={styles.flexContainer}>
         <ScrollView style={styles.safeArea} contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container} ref={viewRef}>
-            <Text style={styles.companyName}>{"Nombre de la Empresa"}</Text>
-            <Text style={styles.title}>{"COMPROBANTE DE PAGO"}</Text>
+            <Text style={styles.companyName}>LOG Notas Cobradas</Text>
+            <Text style={styles.storeInfo}>Store: 02</Text>
+            <Text style={styles.title}>COMPROBANTE DE PAGO</Text>
             <View style={styles.infoSection}>
               <Text style={styles.sectionText}>Fecha: {formattedDate}</Text>
-              <Text style={styles.sectionText}>N° Cuenta: {"1234567890"}</Text>
-              <Text style={styles.sectionText}>Método de Pago: {"Efectivo"}</Text>
+              <Text style={styles.sectionText}>N° Cuenta: 11201010212</Text>
             </View>
-            <Text style={styles.notesTitle}>Notas Cobradas (Bs.)</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
                 <Text style={[styles.tableHeaderText, styles.cellNota]}>Nota</Text>
@@ -137,12 +136,19 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     borderRadius: 10,
     backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   companyName: {
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 22,
-    marginBottom: 10,
+    marginBottom: 5,
+  },
+  storeInfo: {
+    textAlign: 'center',
+    fontSize: 16,
+    marginBottom: 15,
   },
   title: {
     textAlign: 'center',
@@ -151,12 +157,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   infoSection: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   sectionText: {
     fontSize: fontSizeM,
-    fontWeight: 'bold',
-    marginVertical: 5,
+    marginVertical: 2,
   },
   notesTitle: {
     textAlign: 'center',
@@ -181,13 +186,12 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
   cell: {
     fontSize: fontSizeM,
-    fontWeight: 'bold',
     paddingVertical: 5,
   },
   cellNota: {
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
   totalSection: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingTop: 20,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#000',
   },
