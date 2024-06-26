@@ -3,20 +3,17 @@ import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Text } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
-import StyledText from '../utils/StyledText';
-import Cascading from '../animation/CascadingFadeInView';
-import Icon from "react-native-vector-icons/AntDesign";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { theme } from "../assets/Theme";
+import Icon from "react-native-vector-icons/AntDesign";
 import { StatusBar } from 'expo-status-bar';
 import { Dimensions } from 'react-native';
 import useNotasCobradasStore from '../stores/notasCobradasStore'; // Ajusta la ruta
-import { format } from 'date-fns'; // Asegúrate de importar 'format' de 'date-fns'
 import SimpleButton from '../utils/SimpleButton';
+import { theme } from "../assets/Theme";
 
 const screenWidth = Dimensions.get('window').width;
-const fontSizeM = screenWidth * 0.031;
-const fontSizeL = screenWidth * 0.034;
+const fontSizeM = screenWidth * 0.045;
+const fontSizeL = screenWidth * 0.05;
 
 const SimpleScreen = () => {
   const viewRef = useRef();
@@ -26,7 +23,6 @@ const SimpleScreen = () => {
   const notasCobradas = useNotasCobradasStore((state) => state.notasCobradas);
   const clearNotasCobradas = useNotasCobradasStore((state) => state.clearNotasCobradas);
 
-  // Log the store content to understand the issue
   useEffect(() => {
     console.log('Notas Cobradas Store:', notasCobradas);
   }, [notasCobradas]);
@@ -64,95 +60,64 @@ const SimpleScreen = () => {
   return (
     <SafeAreaView style={styles.flexContainer}>
       <StatusBar style="light" backgroundColor={theme.colors.secondary} />
-      <Cascading delay={200} animationKey={animationKey}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.back}
-            onPress={() => navigation.goBack()}
-          >
-            <Icon name="back" size={30} color="black" />
-          </TouchableOpacity>
-          <View style={styles.aviContainer}>
-            {/* Additional view content if needed */}
-          </View>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.back}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="back" size={30} color="black" />
+        </TouchableOpacity>
+        <View style={styles.aviContainer}>
+          {/* Additional view content if needed */}
         </View>
-      </Cascading>
+      </View>
       
       <View style={styles.flexContainer}>
         <ScrollView style={styles.safeArea} contentContainerStyle={styles.scrollViewContent}>
-          <Cascading delay={400} animationKey={animationKey}>
-            <View style={styles.container} ref={viewRef}>
-              <Text style={styles.title}>{"Nombre de la Empresa"}</Text>
-              <Text style={styles.subtitle}>{"COMPROBANTE DE PAGO"}</Text>
-              <Text style={{height:15}}>{""}</Text>
-              <View style={styles.dottedLine} />
-              <Text style={{height:6}}>{""}</Text>
-              <Text style={styles.section}>FECHA: {formattedDate}</Text>
-              
-              <Text style={styles.section}>N° CUENTA: {"1234567890"}</Text>
-              <Text style={styles.section}>METODO DE PAGO: {"efectivo"}</Text>
-              <Text style={{height:6}}>{""}</Text>
-              <View style={styles.dottedLine} />
-              <Text style={styles.sectionTitle}>NOTAS COBRADAS (Bs.)</Text>
-              <View style={styles.dottedLine} />
+          <View style={styles.container} ref={viewRef}>
+            <Text style={styles.companyName}>{"Nombre de la Empresa"}</Text>
+            <Text style={styles.title}>{"COMPROBANTE DE PAGO"}</Text>
+            <View style={styles.infoSection}>
+              <Text style={styles.sectionText}>Fecha: {formattedDate}</Text>
+              <Text style={styles.sectionText}>N° Cuenta: {"1234567890"}</Text>
+              <Text style={styles.sectionText}>Método de Pago: {"Efectivo"}</Text>
+            </View>
+            <Text style={styles.notesTitle}>Notas Cobradas (Bs.)</Text>
+            <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderText, styles.cellNota]}>NOTA</Text>
-                <Text style={[styles.tableHeaderText, styles.cellTotal]}>MONTO</Text>
-                <Text style={[styles.tableHeaderText, styles.cellPagado]}>OBSERVACIONES</Text>
+                <Text style={[styles.tableHeaderText, styles.cellNota]}>Nota</Text>
+                <Text style={[styles.tableHeaderText, styles.cellPago]}>Pago</Text>
+                <Text style={[styles.tableHeaderText, styles.cellAmount]}>Monto</Text>
               </View>
-              <View style={styles.dottedLine} />
               {notasCobradas.map((nota, index) => (
                 <View key={index} style={styles.tableRow}>
-                  <Text style={[styles.cell, styles.cellNota]}>
-                    {nota.pago_a_nota + '\n' + (nota.fecha ? format(new Date(nota.fecha), 'dd/MM/yyyy') : 'Fecha inválida')}
-                  </Text>
-                  <Text style={[styles.cell, styles.cellTotal]}>
-                    {nota.monto.toFixed(2)}
-                  </Text>
-                  <Text style={[styles.cell, styles.cellPagado]}>
-                    {nota.observaciones || '-'}
+                  <Text style={[styles.cell, styles.cellNota]}>{nota.pago_a_nota}</Text>
+                  <Text style={[styles.cell, styles.cellPago]}>{nota.modo_pago === 'E' ? 'Efectivo' : 'Banco'}</Text>
+                  <Text style={[styles.cell, styles.cellAmount]}>
+                    {nota.monto.toFixed(2)} {nota.moneda === 'B' ? 'Bs' : '$'}
                   </Text>
                 </View>
               ))}
-              <View style={styles.dottedLine} />
             </View>
-          </Cascading>
+            <View style={styles.totalSection}>
+              <Text style={styles.totalText}>Total Pagado: </Text>
+              <Text style={styles.totalAmount}>{notasCobradas.reduce((total, nota) => total + nota.monto, 0).toFixed(2)} Bs.</Text>
+            </View>
+          </View>
         </ScrollView>
 
-        <Cascading delay={500} animationKey={animationKey}>
-          <View style={styles.buttonContainer}>
-            <SimpleButton
-              text="Imprimir"
-              onPress={handlePress}
-            />
-          </View>
-        </Cascading>
+        <View style={styles.buttonContainer}>
+          <SimpleButton
+            text="Imprimir"
+            onPress={handlePress}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  totalPagado: {
-    fontSize: fontSizeL,
-    textAlign: 'center',
-  },
-  cellTotal: {
-    fontSize: fontSizeL,
-  },
-  sectionLabel: {
-    marginTop: 5,
-    marginLeft: 20,
-    fontWeight: 'bold',
-    fontSize: fontSizeL,
-  },
-  sectionContent: {
-    fontSize: fontSizeM,
-  },
   flexContainer: {
     flex: 1,
     backgroundColor: theme.colors.secondary,
@@ -161,31 +126,105 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    flexGrow: 0.7,
+    flexGrow: 1,
     justifyContent: 'center',
     paddingBottom: 30,
+  },
+  container: {
+    margin: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    alignSelf: 'stretch',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+  },
+  companyName: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 22,
+    marginBottom: 10,
+  },
+  title: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  infoSection: {
+    marginBottom: 20,
+  },
+  sectionText: {
+    fontSize: fontSizeM,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  notesTitle: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginVertical: 10,
+  },
+  table: {
+    marginBottom: 20,
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+  },
+  tableHeaderText: {
+    fontWeight: 'bold',
+    fontSize: fontSizeL,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  cell: {
+    fontSize: fontSizeM,
+    fontWeight: 'bold',
+    paddingVertical: 5,
+  },
+  cellNota: {
+    width: screenWidth * 0.3,
+  },
+  cellPago: {
+    width: screenWidth * 0.2,
+    textAlign: 'center',
+  },
+  cellAmount: {
+    width: screenWidth * 0.3,
+    textAlign: 'right',
+  },
+  totalSection: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#000',
+  },
+  totalText: {
+    fontWeight: 'bold',
+    fontSize: fontSizeL,
+  },
+  totalAmount: {
+    fontWeight: 'bold',
+    fontSize: fontSizeL,
+    marginLeft: 10,
   },
   buttonContainer: {
     marginHorizontal: 20,
     paddingBottom: 20,
   },
-  container: {
-    margin: 10,
-    paddingTop: 40,
-    paddingBottom: 80,
-    alignSelf: 'stretch',
-    borderRadius: 10,
-    backgroundColor: '#fff',
-  },
-  title: {
-    textAlign: 'center',
-  },
-  notaSection: {
-    marginBottom: 10,
-    marginTop: 10,
-  },
-  total: {
-    marginTop: 20,
+  header: {
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   back: {
     justifyContent: "center",
@@ -195,68 +234,9 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
   },
-  header: {
-    marginHorizontal: 20,
-  },
-  title: {
-    fontWeight: 'bold',
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  subtitle: {
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  section: {
-    fontSize: fontSizeM,
-    marginLeft: 20,
-  },
-  sectionTitle: {
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: fontSizeL,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
+  aviContainer: {
+    flex: 1,
     alignItems: 'center',
-  },
-  dottedLine: {
-    borderBottomWidth: 2,
-    borderColor: 'black',
-    borderStyle: 'dotted',
-    marginVertical: 3,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-  },
-  tableHeaderText: {
-    fontWeight: 'bold',
-    fontSize: 13,
-    fontSize: fontSizeL,
-  },
-  cell: {
-    fontSize: fontSizeM,
-    paddingVertical: 5,
-    textAlign: 'left',
-  },
-  cellNota: {
-    width: screenWidth * 0.22,
-  },
-  cellFecha: {
-    textAlign: 'center',
-  },
-  cellPagado: {
-    width: screenWidth * 0.23,
-    textAlign: 'right',
-  },
-  cellSaldo: {
-    width: screenWidth * 0.2,
-    textAlign: 'right',
   },
 });
 
