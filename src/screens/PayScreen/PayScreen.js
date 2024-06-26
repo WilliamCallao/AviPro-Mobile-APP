@@ -17,6 +17,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StyledText from "../../utils/StyledText";
+import useNotasCobradasStore from '../../stores/notasCobradasStore';
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -33,6 +34,7 @@ const PayScreen = ({ route }) => {
     const [selectedBank, setSelectedBank] = useState('');
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [clientName, setClientName] = useState('');
+    const addNotaCobrada = useNotasCobradasStore((state) => state.addNotaCobrada);
 
     useEffect(() => {
         const fetchAccounts = async () => {
@@ -146,6 +148,9 @@ const PayScreen = ({ route }) => {
                 nombre_cliente: clientName,
                 monto: parseFloat(data.amount)
             });
+
+            // Agregar la nota cobrada al store de Zustand
+            addNotaCobrada(commonData);
 
             Alert.alert('Éxito', 'El pago ha sido registrado correctamente');
             navigation.goBack();

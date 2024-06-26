@@ -1,41 +1,42 @@
-import React, { useRef, useState, useCallback} from 'react';
-import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Text  } from 'react-native';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import StyledText from '../utils/StyledText';
-import DualTextView from '../utils/DualTextView';
-import SimpleButton from '../utils/SimpleButton';
-import PaymentStore from '../stores/PaymentStore';
 import Cascading from '../animation/CascadingFadeInView';
 import Icon from "react-native-vector-icons/AntDesign";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { theme } from "../assets/Theme";
 import { StatusBar } from 'expo-status-bar';
 import { Dimensions } from 'react-native';
-const screenWidth = Dimensions.get('window').width;
-import useStore from '../stores/store';
+import useNotasCobradasStore from '../stores/notasCobradasStore'; // Ajusta la ruta
+import { format } from 'date-fns'; // Asegúrate de importar 'format' de 'date-fns'
+import SimpleButton from '../utils/SimpleButton';
 
+const screenWidth = Dimensions.get('window').width;
 const fontSizeM = screenWidth * 0.031;
-const fontSizeL =screenWidth * 0.034;
+const fontSizeL = screenWidth * 0.034;
 
 const SimpleScreen = () => {
   const viewRef = useRef();
   const navigation = useNavigation();
-  const factura = PaymentStore((state) => state.facturaActual);
-  const numeroCuenta = factura.cliente.numeroCuenta;
-  const cliente = useStore(state => state.buscarClientePorCuenta(numeroCuenta));
-
-  const pagosRealizados = PaymentStore((state) => state.pagosRealizados);
-  const borrarPagos = PaymentStore((state) => state.limpiarFactura);
-  const totalPagado = factura.notasPagadas.reduce((acc, nota) => acc + nota.detalles.reduce((accDet, det) => accDet + parseFloat(det.pagado), 0), 0).toFixed(2);
-
   const [animationKey, setAnimationKey] = useState(Date.now());
+
+  const notasCobradas = useNotasCobradasStore((state) => state.notasCobradas);
+  const clearNotasCobradas = useNotasCobradasStore((state) => state.clearNotasCobradas);
+
+  // Log the store content to understand the issue
+  useEffect(() => {
+    console.log('Notas Cobradas Store:', notasCobradas);
+  }, [notasCobradas]);
+
   useFocusEffect(
-  useCallback(() => {
+    useCallback(() => {
       setAnimationKey(Date.now());
-  }, [])
+    }, [])
   );
+
   const captureAndShareScreenshot = async () => {
     try {
       const uri = await captureRef(viewRef, {
@@ -47,12 +48,14 @@ const SimpleScreen = () => {
       Alert.alert("Error", "No se pudo capturar o compartir el comprobante: " + error.message);
     }
   };
+
   const handlePress = async () => {
     await captureAndShareScreenshot();
-    handleBorrarPagos();
+    handleClearNotasCobradas();
   };
-  const handleBorrarPagos = () => {
-    borrarPagos();
+
+  const handleClearNotasCobradas = () => {
+    clearNotasCobradas();
   };
 
   const currentDate = new Date();
@@ -79,54 +82,38 @@ const SimpleScreen = () => {
         <ScrollView style={styles.safeArea} contentContainerStyle={styles.scrollViewContent}>
           <Cascading delay={400} animationKey={animationKey}>
             <View style={styles.container} ref={viewRef}>
-              <Text style={styles.title}>{factura.nombreEmpresa}</Text>
+              <Text style={styles.title}>{"Nombre de la Empresa"}</Text>
               <Text style={styles.subtitle}>{"COMPROBANTE DE PAGO"}</Text>
               <Text style={{height:15}}>{""}</Text>
               <View style={styles.dottedLine} />
               <Text style={{height:6}}>{""}</Text>
               <Text style={styles.section}>FECHA: {formattedDate}</Text>
-              {cliente && cliente.Nombre && (
-                <Text style={styles.section}>CLIENTE: {cliente.Nombre}</Text>
-              )}
               
-              <Text style={styles.section}>N° CUENTA: {factura.cliente.numeroCuenta}</Text>
-              <Text style={styles.section}>METODO DE PAGO: {factura.metodoPago}</Text>
+              <Text style={styles.section}>N° CUENTA: {"1234567890"}</Text>
+              <Text style={styles.section}>METODO DE PAGO: {"efectivo"}</Text>
               <Text style={{height:6}}>{""}</Text>
               <View style={styles.dottedLine} />
-              <Text style={styles.sectionTitle}>NOTAS PAGADAS (Bs.)</Text>
+              <Text style={styles.sectionTitle}>NOTAS COBRADAS (Bs.)</Text>
               <View style={styles.dottedLine} />
               <View style={styles.tableHeader}>
                 <Text style={[styles.tableHeaderText, styles.cellNota]}>NOTA</Text>
-                <Text style={[styles.tableHeaderText, styles.cellTotal]}>TOTAL</Text>
-                <Text style={[styles.tableHeaderText, styles.cellPagado]}>PAGADO</Text>
-                <Text style={[styles.tableHeaderText, styles.cellSaldo]}>SALDO</Text>
+                <Text style={[styles.tableHeaderText, styles.cellTotal]}>MONTO</Text>
+                <Text style={[styles.tableHeaderText, styles.cellPagado]}>OBSERVACIONES</Text>
               </View>
               <View style={styles.dottedLine} />
-              {factura.notasPagadas.map((nota, index) => (
-                <View key={index}>
-                  {nota.detalles.map((detalle, detalleIndex) => (
-                    <View key={detalleIndex} style={styles.tableRow}>
-                      <Text style={[styles.cell, styles.cellNota]}>
-                        {detalle.numeroNota + '\n' + detalle.fecha}
-                      </Text>
-                      <Text style={[styles.cell, styles.cellTotal]}>
-                        {detalle.total.toFixed(2)}
-                      </Text>
-                      <Text style={[styles.cell, styles.cellPagado]}>
-                        {typeof detalle.pagado === 'number' ? detalle.pagado.toFixed(2) : '0.00'}
-                      </Text>
-                      <Text style={[styles.cell, styles.cellSaldo]}>
-                        {typeof detalle.saldo === 'number' ? detalle.saldo.toFixed(2) : '0.00'}
-                      </Text>
-                    </View>
-                  ))}
-                  {/* <View style={styles.dottedLine} /> */}
+              {notasCobradas.map((nota, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={[styles.cell, styles.cellNota]}>
+                    {nota.pago_a_nota + '\n' + (nota.fecha ? format(new Date(nota.fecha), 'dd/MM/yyyy') : 'Fecha inválida')}
+                  </Text>
+                  <Text style={[styles.cell, styles.cellTotal]}>
+                    {nota.monto.toFixed(2)}
+                  </Text>
+                  <Text style={[styles.cell, styles.cellPagado]}>
+                    {nota.observaciones || '-'}
+                  </Text>
                 </View>
               ))}
-              <View style={styles.totalRow}>
-                <Text style={styles.cellTotal}>{"Total Pagado: "}</Text>
-                <Text style={[styles.cellPagado, styles.totalPagado]}>{totalPagado} Bs.</Text>
-              </View>
               <View style={styles.dottedLine} />
             </View>
           </Cascading>
@@ -147,7 +134,6 @@ const SimpleScreen = () => {
 
 const styles = StyleSheet.create({
   totalRow: {
-    
     flexDirection: 'row',
     justifyContent: 'center',
   },
@@ -174,10 +160,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  safeArea: {
-    paddingTop: 35,
-    backgroundColor:theme.colors.secondary, 
-  },
   scrollViewContent: {
     flexGrow: 0.7,
     justifyContent: 'center',
@@ -202,8 +184,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
   },
-  total:{
-    marginTop:20,
+  total: {
+    marginTop: 20,
   },
   back: {
     justifyContent: "center",
@@ -212,9 +194,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: 60,
     height: 60,
-},
-  header:{
-    marginHorizontal:20,
+  },
+  header: {
+    marginHorizontal: 20,
   },
   title: {
     fontWeight: 'bold',
