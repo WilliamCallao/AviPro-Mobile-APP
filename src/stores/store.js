@@ -1,6 +1,25 @@
-import {create} from 'zustand';
-import { collection, onSnapshot, doc, updateDoc, addDoc } from "firebase/firestore";
-import { db } from '../../config/firebase';
+import { create } from 'zustand';
+
+// Supongamos que tienes una función `fetchData` que obtiene los datos de un API o de otra fuente
+const fetchData = async (collectionName) => {
+  // Aquí iría el código para obtener los datos de tu nueva fuente, por ejemplo, una API REST
+  // A continuación hay un ejemplo de datos estáticos para ilustración
+  const data = {
+    clientes: [
+      { id: '1', Cuenta: '123', Nombre: 'Cliente 1' },
+      { id: '2', Cuenta: '456', Nombre: 'Cliente 2' },
+    ],
+    notas_pendientes: [
+      { id: '1', Cuenta: '123', Monto: 100 },
+      { id: '2', Cuenta: '456', Monto: 200 },
+    ],
+    notas_cobradas: [
+      { id: '1', cuenta: '123', Monto: 150 },
+      { id: '2', cuenta: '456', Monto: 250 },
+    ],
+  };
+  return data[collectionName] || [];
+};
 
 const useStore = create((set, get) => ({
   clientes: [],
@@ -8,31 +27,13 @@ const useStore = create((set, get) => ({
   clientesConNotas: [],
   pagosRealizados: [],
 
-  subscribeToData: () => {
-    const unsubscribeClientes = onSnapshot(collection(db, 'clientes'), (snapshot) => {
-      const clientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      set({ clientes });
-      get().combinarClientesConNotas();
-      // console.log("Clientes actualizados en tiempo real");
-    });
+  subscribeToData: async () => {
+    const clientes = await fetchData('clientes');
+    const notasPendientes = await fetchData('notas_pendientes');
+    const pagosRealizados = await fetchData('notas_cobradas');
 
-    const unsubscribeNotas = onSnapshot(collection(db, 'notas_pendientes'), (snapshot) => {
-      const notasPendientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      set({ notasPendientes });
-      get().combinarClientesConNotas();
-      // console.log("Notas pendientes actualizadas en tiempo real");
-    });
-
-    const unsubscribePagos = onSnapshot(collection(db, 'notas_cobradas'), (snapshot) => {
-      const pagosRealizados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      set({ pagosRealizados });
-      // console.log("Pagos realizados actualizados en tiempo real");
-    });
-    return () => {
-      unsubscribeClientes();
-      unsubscribeNotas();
-      unsubscribePagos();
-    };
+    set({ clientes, notasPendientes, pagosRealizados });
+    get().combinarClientesConNotas();
   },
 
   combinarClientesConNotas: () => {
@@ -60,30 +61,25 @@ const useStore = create((set, get) => ({
     });
 
     set({ clientesConNotas });
-    console.log("");
   },
 
   updateNota: async (notaId, data) => {
-    const notaRef = doc(db, 'notas_pendientes', notaId);
-    await updateDoc(notaRef, data);
-    console.log("Nota actualizada en Firestore.", notaRef.id);
+    // Aquí iría el código para actualizar la nota en tu nueva base de datos o API
+    console.log("Nota actualizada.", notaId);
   },
 
   agregarPago: async (pago) => {
-    const pagosRealizados = collection(db, 'notas_cobradas');
-    await addDoc(pagosRealizados, pago);
-    // console.log("Pago agregado al estado.");
+    // Aquí iría el código para agregar el pago a tu nueva base de datos o API
+    console.log("Pago agregado al estado.");
   },
 
   buscarClientePorCuenta: (numeroCuenta) => {
     const clientes = get().clientes;
-    // console.log("Buscar cliente por número de cuenta:", numeroCuenta);
-    // console.log("Lista de clientes actual:", clientes);
     const clienteEncontrado = clientes.find(cliente => cliente.Cuenta?.trim() === numeroCuenta.trim());
     if (clienteEncontrado) {
-      // console.log("Cliente encontrado:", clienteEncontrado);
+      console.log("Cliente encontrado:", clienteEncontrado);
     } else {
-      // console.log("No se encontró un cliente con el número de cuenta:", numeroCuenta);
+      console.log("No se encontró un cliente con el número de cuenta:", numeroCuenta);
     }
     return clienteEncontrado;
   }
