@@ -46,7 +46,7 @@ const CobradoresScreen = () => {
   };
 
   const handleSelectCobrador = async (cobrador) => {
-    console.log(cobrador);
+    // console.log(cobrador);
     try {
       await AsyncStorage.setItem('@cobrador_id', cobrador ? cobrador.cobrador_id : '');
       await AsyncStorage.setItem('@cobrador_nombre', cobrador ? cobrador.nombre : '');
@@ -54,9 +54,9 @@ const CobradoresScreen = () => {
       const idEmpresa = await AsyncStorage.getItem('@empresa_id');
       const savedCobradorId = await AsyncStorage.getItem('@cobrador_id');
       const savedCobradorNombre = await AsyncStorage.getItem('@cobrador_nombre');
-      console.log('Empresa ID guardado:', idEmpresa);
-      console.log('Cobrador ID guardado:', savedCobradorId);
-      console.log('Cobrador Nombre guardado:', savedCobradorNombre);
+      // console.log('Empresa ID guardado:', idEmpresa);
+      // console.log('Cobrador ID guardado:', savedCobradorId);
+      // console.log('Cobrador Nombre guardado:', savedCobradorNombre);
 
       navigation.navigate('NewScreen');
     } catch (error) {

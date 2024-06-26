@@ -36,10 +36,6 @@ export default{
       package: "com.endurancesoft.avipromobile",
       googleServicesFile: "./google-services.json",
     },
-    plugins: [
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
-    ],
     web: {
       favicon: "./assets/favicon.png"
     },
