@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
     },
     triggerText: {
         fontWeight: "bold",
+        color: 'black'
     },
     optionsContainer: {
         width: width - 40,
@@ -82,6 +83,7 @@ const styles = StyleSheet.create({
     },
     optionsText: {
         fontWeight: "bold",
+        color: 'black'
     },
     optionContainer: {
         flexDirection: "row",
