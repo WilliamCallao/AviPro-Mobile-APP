@@ -9,7 +9,6 @@ import PayScreen from '../screens/PayScreen/PayScreen';
 import AutomaticPayScreen from '../screens/PayScreen/AutomaticPayScreen';
 import SelectPaymentMethodScreen from '../screens/SelectPaymentMethodScreen';
 import FacturaScreen from '../screens/FacturaScreen';
-import ProfileScreen from '../screens/ProfileScreen';
 import ActivationScreen from '../screens/ActivationScreen/ActivationScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SelectPayModeScreen from '../screens/SelectPayModeScreen';
@@ -88,10 +87,6 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="Factura" 
           component={FacturaScreen}
-        />
-        <Stack.Screen
-          name='ProfileScreen'
-          component={ProfileScreen}
         />
         <Stack.Screen
           name='ActivationScreen'

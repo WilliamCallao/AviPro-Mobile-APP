@@ -1,128 +1,84 @@
-// NewScreen.js
-import React, { useState, useEffect, useCallback } from "react";
-import { SafeAreaView, StyleSheet, View, FlatList, Text, Button } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { SafeAreaView, StyleSheet, View, FlatList, ActivityIndicator, Text } from "react-native";
 import ProfileHeader from "./ProfileHeader";
 import StoryItem from "./StoryItem";
 import { theme } from "../../assets/Theme";
 import DropdownSelector from "../../components/DropdownSelector";
 import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
-import userStore from "../../stores/userStore"; 
-import useStore from "../../stores/store";
-import {db} from "../../../config/firebase";
-import { doc, getDoc } from 'firebase/firestore';
-import shallow from 'zustand/shallow';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from '../../../config';
+import StyledText from "../../utils/StyledText";
 
 const NewScreen = () => {
   const [selectedOption, setSelectedOption] = useState("Hoy");
-  const OPCIONES = ['Hoy', 'Esta Semana', 'Este Mes', 'Todo'];
+  const OPCIONES = ['Hoy', 'Ayer', 'Esta Semana', 'Este Mes', 'Todo'];
   const title = 'Actividad';
-  const { clientes, notasPendientes, clientesConNotas, subscribeToData } = useStore(state => ({
-    clientes: state.clientes,
-    notasPendientes: state.notasPendientes,
-    subscribeToData: state.subscribeToData,
-    clientesConNotas: state.clientesConNotas,
-  }));
-  const {user, setUser} = userStore(state =>({
-    user: state.user,
-    setUser: state.setUser
-  })
-  );
-  const [nombreF, setNombreF] = useState("");
-
-  useEffect(() => {
-    const unsubscribe = subscribeToData();
-    return () => unsubscribe();
-  }, [subscribeToData]);
-  
-  useEffect(() => {
-    if(!user || !user.idDoc){ 
-      console.log('Usuario no definido o ID de documento no definido.');
-      return;
-    }else{
-    const docRef = doc(db, 'cobradores', user.idDoc);
-    const fetchUserData = async () => {
-      try{
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          console.log('Document data:', docSnap.data());  //raro porque sin esto no funciona
-          const data = docSnap.data();
-          const {nombre} = data;
-          setNombreF(nombre);
-        } else {
-      }}catch(e){
-        console.error("Error al obtener documento: ", e);
-      }
-    };
-    fetchUserData();}
-  },[user?.idDoc, user?.nombre]);
-
-  const HISTORY_DATA = [
-    {
-      id: "1",
-      name: "Samuel Herbas",
-      amount: "130.00",
-      date: "2024-03-01T12:32:00",
-      note: "150",
-    },
-    { id: "2", 
-      name: "Henry Peña", 
-      amount: "70.00", 
-      date: "2024-03-01T09:16:00", 
-      note: "170" },
-  ];
-  
-  const renderHistoryItem = ({ item, index }) => (
-    <Cascading delay={400 + 80 * index} animationKey={animationKey}>
-      <StoryItem
-        story={item}
-        onSelect={() => {
-          /* item select */
-        }}
-      />
-    </Cascading>
-  );
+  const [historyData, setHistoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [animationKey, setAnimationKey] = useState(Date.now());
+
+  const fetchData = async (empresa_id, cobrador_id, filtro) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${BASE_URL}/api/mobile/historial-cobros/${empresa_id}/${cobrador_id}/${filtro}`);
+      const sortedData = response.data.sort((a, b) => new Date(`${b.fecha}T${b.hora}`) - new Date(`${a.fecha}T${a.hora}`));
+      setHistoryData(sortedData);
+    } catch (error) {
+      console.error("Error fetching history data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStorageData = useCallback(async () => {
+    const empresa_id = await AsyncStorage.getItem('@empresa_id');
+    const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
+    let filtro;
+
+    switch (selectedOption) {
+      case 'Hoy':
+        filtro = 'hoy';
+        break;
+      case 'Ayer':
+        filtro = 'ayer';
+        break;
+      case 'Esta Semana':
+        filtro = 'ultima_semana';
+        break;
+      case 'Este Mes':
+        filtro = 'ultimo_mes';
+        break;
+      case 'Todo':
+      default:
+        filtro = '';
+    }
+
+    await fetchData(empresa_id, cobrador_id, filtro);
+  }, [selectedOption]);
+
   useFocusEffect(
     useCallback(() => {
       setAnimationKey(Date.now());
-    }, [])
+      fetchStorageData();
+    }, [fetchStorageData])
   );
+
   const onOptionChange = (option) => {
     setSelectedOption(option);
   };
 
-  const logClientesConNotas = () => {
-    const { clientesConNotas } = useStore.getState();
-    
-    if (clientesConNotas.length === 0) {
-      console.log("No hay datos combinados para mostrar.");
-      return;
-    }
-  
-    // clientesConNotas.forEach(cliente => {
-    //   console.log(`Cliente: ${cliente.Nombre} - Cuenta: ${cliente.Cuenta}`);
-    //   if (cliente.NotasPendientes && cliente.NotasPendientes.length > 0) {
-    //     console.log('  Notas Pendientes:');
-    //     cliente.NotasPendientes.forEach(nota => {
-    //       console.log(`    Nota: ${nota.nro_nota}, Importe: ${nota.importe_nota}, Saldo: ${nota.Saldo_pendiente}`);
-    //     });
-    //   } else {
-    //     console.log('  No hay notas pendientes para este cliente.');
-    //   }
-    // });
-  
-    console.log(JSON.stringify(clientesConNotas, null, 2));
-  };
-
-  const logClientes = () => console.log("Clientes:", clientes);
-  const logNotasPendientes = () => console.log("Notas Pendientes:", notasPendientes);
-
+  const renderHistoryItem = ({ item, index }) => (
+    <Cascading delay={index > 6 ? 0 : 400 + 80 * index} animationKey={animationKey}>
+      <StoryItem story={item} />
+    </Cascading>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <ProfileHeader userName={nombreF} />
+        <ProfileHeader />
         <Cascading delay={300} animationKey={animationKey}>
           <DropdownSelector
             title={title}
@@ -132,22 +88,22 @@ const NewScreen = () => {
           />
         </Cascading>
       </View>
-      {/* <View style={{ flexDirection: 'row', justifyContent: 'space-around', padding: 20 }}>
-        <Button title="Log Clientes" onPress={logClientes} />
-        <Button title="Log Notas" onPress={logNotasPendientes} />
-        <Button title="Combinar" onPress={() => {
-          useStore.getState().combinarClientesConNotas();
-          setTimeout(logClientesConNotas, 0);
-        }} />
-      </View> */}
       <View style={styles.listContainer}>
-        <FlatList
-          data={HISTORY_DATA}
-          renderItem={renderHistoryItem}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={<View style={{ height: 10 }} />}
-          ListFooterComponent={<View style={{ height: 10 }} />}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color={theme.colors.secondary} style={styles.loader} />
+        ) : historyData.length === 0 ? (
+          <View style={styles.noActivityContainer}>
+            <StyledText regularText>No hay actividad reciente</StyledText>
+          </View>
+        ) : (
+          <FlatList
+            data={historyData}
+            renderItem={renderHistoryItem}
+            keyExtractor={(item) => item.id.toString()}
+            ListHeaderComponent={<View style={{ height: 10 }} />}
+            ListFooterComponent={<View style={{ height: 10 }} />}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -170,6 +126,16 @@ const styles = StyleSheet.create({
   listContainer: {
     backgroundColor: theme.colors.primary,
     flex: 1,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noActivityContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

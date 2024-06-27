@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet, Dimensions } from 'react-native';
 import { Controller } from 'react-hook-form';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { FontAwesome5 } from "@expo/vector-icons";
 import { theme } from "../../assets/Theme";
+import StyledText from "../../utils/StyledText"; // Importar StyledText
 
 const { width } = Dimensions.get('window');
 
@@ -19,7 +20,7 @@ const InputWithDropdown = ({ control, name, title, type = 'default', rules = {},
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>{title}</Text>
+            <StyledText regularText style={styles.label}>{title}</StyledText>
             <View style={styles.inputContainer}>
                 <Controller
                     control={control}
@@ -40,7 +41,7 @@ const InputWithDropdown = ({ control, name, title, type = 'default', rules = {},
                 <Menu opened={menuVisible} onBackdropPress={() => setMenuVisible(false)}>
                     <MenuTrigger onPress={toggleMenu} style={styles.trigger}>
                         <View style={styles.menuTrigger}>
-                            <Text style={styles.triggerText}>{selectedCurrency}</Text>
+                            <StyledText regularText style={styles.triggerText}>{selectedCurrency}</StyledText>
                             <FontAwesome5 name={menuVisible ? "chevron-up" : "chevron-down"} size={15} color={theme.colors.black} />
                         </View>
                     </MenuTrigger>
@@ -48,7 +49,7 @@ const InputWithDropdown = ({ control, name, title, type = 'default', rules = {},
                         {['BS   ', 'USD '].map((option) => (
                             <MenuOption key={option} onSelect={() => { handleCurrencyChange(option); setMenuVisible(false); }}>
                                 <View style={styles.optionContainer}>
-                                    <Text style={styles.optionsText}>{option}</Text>
+                                    <StyledText regularText style={styles.optionsText}>{option}</StyledText>
                                     {selectedCurrency === option && (
                                         <FontAwesome5 name="check" size={17} color={theme.colors.black} style={{ marginLeft: 10 }} />
                                     )}
@@ -59,7 +60,7 @@ const InputWithDropdown = ({ control, name, title, type = 'default', rules = {},
                 </Menu>
             </View>
             {errors[name] && (
-                <Text style={styles.error}>{errors[name].message}</Text>
+                <StyledText regularText style={styles.error}>{errors[name].message}</StyledText>
             )}
         </View>
     );
@@ -72,7 +73,6 @@ const styles = StyleSheet.create({
     },
     label: {
         color: 'gray',
-        fontSize: 18,
         marginBottom: 5,
         paddingLeft: 10,
     },
@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 10,
         borderWidth: 2,
         borderColor: theme.colors.otherWhite,
-        fontSize: 18,
         fontWeight: 'bold',
     },
     inputFocused: {
@@ -101,7 +100,6 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 10,
         borderWidth: 2,
         borderColor: theme.colors.black,
-        fontSize: 18,
         fontWeight: 'bold',
     },
     trigger: {
@@ -121,7 +119,6 @@ const styles = StyleSheet.create({
     },
     triggerText: {
         color: theme.colors.black,
-        fontSize: 16,
         fontWeight: "bold",
     },
     optionsContainer: {
@@ -137,7 +134,6 @@ const styles = StyleSheet.create({
     },
     optionsText: {
         color: theme.colors.black,
-        fontSize: 16,
         fontWeight: "bold",
     },
     optionContainer: {

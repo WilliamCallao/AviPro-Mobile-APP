@@ -31,6 +31,7 @@ const ActivationScreen = () => {
   const [loading, setLoading] = useState(false);
   const [activationSuccess, setActivationSuccess] = useState(false);
   const [empresaId, setEmpresaId] = useState("");
+  const [empresaNombre, setEmpresaNombre] = useState("");
 
   const { setEmpresa } = userStore((state) => ({
     setEmpresa: state.setEmpresa,
@@ -81,6 +82,15 @@ const ActivationScreen = () => {
         setEmpresa("EmpresaAsignada");
         await AsyncStorage.setItem('@empresa_id', dispositivo.empresa_id);
         setEmpresaId(dispositivo.empresa_id);
+
+        const empresaResponse = await axios.get(
+          `${BASE_URL}/api/mobile/empresas/${dispositivo.empresa_id}/nombre`
+        );
+        const empresaData = empresaResponse.data;
+        setEmpresaNombre(empresaData.nombre);
+        await AsyncStorage.setItem('@empresa_nombre', empresaData.nombre);
+        console.log("Empresa nombre:", empresaData.nombre);
+
       } else if (message === "El código ya fue usado") {
         setMessage("El código ya fue usado.");
       } else if (message === "El código ya no es válido") {

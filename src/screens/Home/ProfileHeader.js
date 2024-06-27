@@ -1,6 +1,6 @@
 // External library imports
 import React, { useCallback, useState, useEffect } from "react";
-import { Text, TouchableOpacity, View, StyleSheet, Dimensions, Alert } from "react-native";
+import { TouchableOpacity, View, StyleSheet, Dimensions, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Local imports
 import Cascading from "../../animation/CascadingFadeInView";
 import { theme } from "../../assets/Theme";
+import StyledText from "../../utils/StyledText";
 
 const screenWidth = Dimensions.get('window').width;
 const isCobranzaEnabled = true;
@@ -56,7 +57,7 @@ const ProfileHeader = () => {
       await AsyncStorage.removeItem('@cobrador_id');
       await AsyncStorage.removeItem('@cobrador_nombre');
       Alert.alert('Éxito', 'Datos borrados exitosamente');
-      setUserName('Usuario'); // Restablecer el nombre de usuario a "Usuario"
+      setUserName('Usuario');
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al borrar los datos.');
     }
@@ -66,13 +67,13 @@ const ProfileHeader = () => {
     <View style={styles.maxContainer}>
       <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       <Cascading delay={100} animationKey={animationKey}>
-        <TouchableOpacity style={styles.accountContainer} onPress={() => navigation.navigate("ProfileScreen", {username: userName})}>
+        <TouchableOpacity style={styles.accountContainer} onPress={() => navigation.navigate("CobradoresScreen", { username: userName })}>
           <View style={styles.letter}>
-            <Text style={styles.initialLetter}>{userName[0]}</Text>
+            <StyledText initial>{userName[0]}</StyledText>
           </View>
           <View style={styles.info}>
-            <Text style={styles.welcomeText}>{currentDate}</Text>
-            <Text style={styles.userName}>{userName}</Text>
+            <StyledText regularBlackText>{currentDate}</StyledText>
+            <StyledText boldText>{userName}</StyledText>
           </View>
         </TouchableOpacity>
       </Cascading>
@@ -84,7 +85,7 @@ const ProfileHeader = () => {
             disabled={!isCobranzaEnabled}
           >
             <Icon name="money" size={40} color={isCobranzaEnabled ? "black" : "#768DAD"} />
-            <Text style={styles.buttonText}>Cobranza</Text>
+            <StyledText boldText style={styles.buttonText}>Cobranza</StyledText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.disabledButton]}
@@ -92,7 +93,7 @@ const ProfileHeader = () => {
             disabled={true}
           >
             <Icon name="list-alt" size={40} color="#8097B6" />
-            <Text style={styles.buttonText2}>Pedidos</Text>
+            <StyledText boldText style={styles.buttonText2}>Pedidos</StyledText>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.disabledButton]}
@@ -100,13 +101,13 @@ const ProfileHeader = () => {
             disabled={true}
           >
             <Icon name="line-chart" size={40} color="#8097B6" />
-            <Text style={styles.buttonText2}>Ventas</Text>
+            <StyledText boldText style={styles.buttonText2}>Ventas</StyledText>
           </TouchableOpacity>
         </View>
       </Cascading>
       <Cascading delay={300} animationKey={animationKey}>
         <TouchableOpacity style={styles.clearButton} onPress={handleClearStorage}>
-          <Text style={styles.clearButtonText}>Borrar Datos</Text>
+          <StyledText buttonText>Borrar Datos</StyledText>
         </TouchableOpacity>
       </Cascading>
     </View>
@@ -122,9 +123,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: theme.colors.skyBlue,
     marginHorizontal: 20,
-    padding: 5,
+    padding: 10,
     borderRadius: 20,
     marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   letter: {
     backgroundColor: theme.colors.tertiary,
@@ -136,20 +139,18 @@ const styles = StyleSheet.create({
   },
   initialLetter: {
     color: theme.colors.primary,
-    fontSize: 22,
   },
   info: {
     marginLeft: 10,
+    flex: 1,
   },
   welcomeText: {
     color: theme.colors.primaryText,
-    fontSize: 15,
-    fontWeight: 'normal',
   },
   userName: {
     color: theme.colors.primaryText,
-    fontSize: 17,
-    fontWeight: 'bold',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -161,8 +162,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     backgroundColor: theme.colors.skyBlue,
     borderRadius: 20,
-    width: screenWidth*0.25,
-    height: screenWidth*0.22,
+    width: screenWidth * 0.25,
+    height: screenWidth * 0.22,
     flex: 1,
     marginHorizontal: 10,
     justifyContent: 'flex-end',
@@ -174,12 +175,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     marginTop: 3,
-    fontWeight: 'bold',
-    color: 'black',
   },
   buttonText2: {
     marginTop: 3,
-    fontWeight: 'bold',
     color: '#8097B6',
   },
   clearButton: {
@@ -190,9 +188,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   clearButtonText: {
-    color: theme.colors.white,
     fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 
