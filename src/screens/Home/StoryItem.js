@@ -9,6 +9,10 @@ const StoryItem = ({ story }) => {
   const formattedDate = dateTime.format('DD/MM/YY');
   const formattedTime = dateTime.format('HH:mm');
 
+  const capitalizeWords = (str) => {
+    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+  };
+
   return (
     <View style={styles.container}>
         {/* <StyledText regularBlackText style={styles.type}>Nota Cobrada</StyledText> */}
@@ -17,7 +21,7 @@ const StoryItem = ({ story }) => {
         <StyledText regularText style={styles.time}>{formattedTime}</StyledText>
       </View>
       <View style={styles.infoContainer}>
-        <StyledText regularText style={styles.name}>{story.nombre_cliente}</StyledText>
+        <StyledText regularText style={styles.name}>{capitalizeWords(story.nombre_cliente)}</StyledText>
         <StyledText regularText style={styles.amount}>{story.monto} Bs</StyledText>
       </View>
     </View>
@@ -51,10 +55,12 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   name: {
-    // color: theme.colors.primaryText,
+    textAlign: "right",
+    alignSelf: "flex-end",
   },
   amount: {
     color: theme.colors.primaryText,
+    textAlign: "right",
   },
   date: {
     marginBottom: 2,
