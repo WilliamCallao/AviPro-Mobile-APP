@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches:
-      - main
+      - production
   workflow_dispatch:
 
 jobs:
