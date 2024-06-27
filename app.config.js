@@ -34,7 +34,6 @@ export default{
         backgroundColor: "#ffffff"
       },
       package: "com.endurancesoft.avipromobile",
-      googleServicesFile: "./google-services.json",
     },
     web: {
       favicon: "./assets/favicon.png"
@@ -44,6 +43,6 @@ export default{
         projectId: "b3ea0140-e392-4aeb-a282-05f169bc71c6",
         owner: "williamcallao",
       },
-      }
+    }
   },
 };
