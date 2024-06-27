@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform, ActivityIndicator, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import { useForm } from "react-hook-form";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -165,9 +165,38 @@ const PayScreen = ({ route }) => {
             }, 2000);
         } catch (error) {
             console.error('Error updating note:', error);
+            await handleRollback(commonData, data.amount, name, clientName);
             setIsProcessing(false);
             setSuccessMessage('');
             Alert.alert('Error', 'Ocurrió un error al registrar el pago');
+        }
+    };
+
+    const handleRollback = async (commonData, amount, cobrador_id, nombre_cliente) => {
+        try {
+            await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/rollback`, {
+                empresa_id: commonData.empresa_id,
+                sucursal_id: commonData.sucursal_id,
+                cuenta: commonData.cuenta,
+                pago_a_nota: commonData.pago_a_nota
+            });
+
+            await axios.post(`${BASE_URL}/api/mobile/notas-pendientes/rollback`, {
+                empresa_id: commonData.empresa_id,
+                sucursal_id: commonData.sucursal_id,
+                cuenta: commonData.cuenta,
+                nro_nota: commonData.pago_a_nota,
+                monto: parseFloat(amount)
+            });
+
+            await axios.post(`${BASE_URL}/api/mobile/historial-cobros/rollback`, {
+                empresa_id: commonData.empresa_id,
+                cobrador_id: cobrador_id,
+                nombre_cliente: nombre_cliente,
+                monto: parseFloat(amount)
+            });
+        } catch (rollbackError) {
+            console.error('Error during rollback:', rollbackError);
         }
     };
 
