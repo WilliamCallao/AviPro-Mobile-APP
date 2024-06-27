@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Alert, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform } from 'react-native';
+import { SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import Modal from 'react-native-modal';
 import { useForm } from "react-hook-form";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -34,6 +35,9 @@ const PayScreen = ({ route }) => {
     const [selectedBank, setSelectedBank] = useState('');
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [clientName, setClientName] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
     const addNotaCobrada = useNotasCobradasStore((state) => state.addNotaCobrada);
 
     useEffect(() => {
@@ -96,17 +100,17 @@ const PayScreen = ({ route }) => {
         },
     });
 
-    const modalConfirmacion = (data) =>
-        Alert.alert('Confirmación', `¿Está seguro de realizar este cobro?\n Monto: ${data.amount} ${selectedCurrency}\n Método de pago: ${selectedPaymentMethod}`, [
-            {
-                text: 'Cancelar',
-                onPress: () => { return; },
-                style: 'cancel',
-            },
-            { text: 'Continuar', onPress: () => { onSubmit(data) } },
-        ]);
+    const modalConfirmacion = (data) => {
+        setIsModalVisible(true);
+        setModalData(data);
+    };
+
+    const [modalData, setModalData] = useState({});
 
     const onSubmit = async (data) => {
+        setIsProcessing(true);
+        setSuccessMessage('');
+
         const getAccountNumber = (description, accounts) => {
             const account = accounts.find(a => a.descripcion === description);
             return account ? account.cuenta : '';
@@ -152,10 +156,17 @@ const PayScreen = ({ route }) => {
             // Agregar la nota cobrada al store de Zustand
             addNotaCobrada(commonData);
 
-            Alert.alert('Éxito', 'El pago ha sido registrado correctamente');
-            navigation.goBack();
+            setIsProcessing(false);
+            setSuccessMessage('El pago ha sido registrado correctamente');
+            setTimeout(() => {
+                setSuccessMessage('');
+                setIsModalVisible(false);
+                navigation.goBack();
+            }, 2000);
         } catch (error) {
             console.error('Error updating note:', error);
+            setIsProcessing(false);
+            setSuccessMessage('');
             Alert.alert('Error', 'Ocurrió un error al registrar el pago');
         }
     };
@@ -293,8 +304,45 @@ const PayScreen = ({ route }) => {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+            <Modal isVisible={isModalVisible} backdropColor="#9DBBE2" backdropOpacity={0.3}>
+                <View style={styles.modalContent}>
+                    {isProcessing ? (
+                        <>
+                            <ActivityIndicator size="large" color={theme.colors.black} />
+                            <StyledText style={styles.modalText}>Registrando pago...</StyledText>
+                        </>
+                    ) : (
+                        successMessage ? (
+                            <>
+                                <Icon name="checkcircle" size={50} color="green" />
+                                <StyledText style={styles.modalText}>{successMessage}</StyledText>
+                            </>
+                        ) : (
+                            <>
+                                <StyledText regularBlackText style={styles.modalText}>¿Está seguro de realizar este cobro?</StyledText>
+                                <StyledText regularText style={styles.modalDetailText}>Monto: {modalData.amount} {selectedCurrency}</StyledText>
+                                <StyledText regularText style={styles.modalDetailText}>Método de pago: {selectedPaymentMethod}</StyledText>
+                                <View style={styles.modalButtonContainer}>
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, { backgroundColor: 'red' }]}
+                                        onPress={() => setIsModalVisible(false)}
+                                    >
+                                        <StyledText style={styles.modalButtonText}>Cancelar</StyledText>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, { backgroundColor: 'green' }]}
+                                        onPress={handleSubmit(onSubmit)}
+                                    >
+                                        <StyledText style={styles.modalButtonText}>Confirmar</StyledText>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )
+                    )}
+                </View>
+            </Modal>
         </SafeAreaView>
-    )
+    );
 };
 
 const styles = StyleSheet.create({
@@ -371,6 +419,36 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         width: '100%',
     },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalText: {
+        marginVertical: 10,
+    },
+    modalDetailText: {
+        marginVertical: 5,
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    modalButton: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        marginVertical: 5,
+        marginHorizontal: 5,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontSize: 16,
+        textAlign: 'center',
+    }
 });
 
 export default PayScreen;
