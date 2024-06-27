@@ -1,4 +1,4 @@
-name: Build AAB
+name: Build APK
 
 on:
   push:
@@ -35,16 +35,13 @@ jobs:
         run: |
           echo $EXPO_PASSWORD | expo login -u $EXPO_EMAIL -p $EXPO_PASSWORD --non-interactive
 
-      # - name: Configure EAS
-      #   run: eas build:configure
+      - name: Build APK
+        run: eas build -p android --profile preview --non-interactive
 
-      - name: Build AAB
-        run: eas build --platform android --profile production --non-interactive
-
-      - name: Upload AAB to GitHub Artifacts
+      - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: aab
+          name: apk
           path: |
-            build/*.aab
-            **/*.aab
+            build/*.apk
+            **/*.apk
