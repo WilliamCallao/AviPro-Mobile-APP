@@ -304,8 +304,8 @@ const PayScreen = ({ route }) => {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-            <Modal isVisible={isModalVisible} backdropColor="#9DBBE2" backdropOpacity={0.3}>
-                <View style={styles.modalContent}>
+            <Modal isVisible={isModalVisible} backdropColor="#9DBBE2" backdropOpacity={0.4}>
+                <View style={[styles.modalContent, styles.modalShadow]}>
                     {isProcessing ? (
                         <>
                             <ActivityIndicator size="large" color={theme.colors.black} />
@@ -315,7 +315,7 @@ const PayScreen = ({ route }) => {
                         successMessage ? (
                             <>
                                 <Icon name="checkcircle" size={50} color="green" />
-                                <StyledText style={styles.modalText}>{successMessage}</StyledText>
+                                <StyledText regularBlackText style={styles.modalText}>{successMessage}</StyledText>
                             </>
                         ) : (
                             <>
@@ -420,13 +420,14 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     modalContent: {
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.primary,
         padding: 20,
         borderRadius: 10,
         alignItems: 'center',
     },
     modalText: {
         marginVertical: 10,
+        // color: theme.colors.primary,
     },
     modalDetailText: {
         marginVertical: 5,
@@ -448,7 +449,17 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         textAlign: 'center',
-    }
+    },
+    modalShadow: {
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 0.75,
+        shadowRadius: 10,
+        elevation: 90,
+    },
 });
 
 export default PayScreen;
