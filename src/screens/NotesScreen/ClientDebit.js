@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Dimensions, StyleSheet, ActivityIndicator } from "react-native";
 import { theme } from "../../assets/Theme";
 import { StatusBar } from "expo-status-bar";
@@ -6,14 +6,16 @@ import { useNavigation } from "@react-navigation/native";
 import SimpleButton from "../../utils/SimpleButton";
 import StyledText from "../../utils/StyledText";
 import InvoiceModal from "../InvoiceModal";
+import useNotasCobradasStore from '../../stores/notasCobradasStore';
 
 const screenWidth = Dimensions.get("window").width;
 
 const ClientDebit = ({ clientInfo }) => {
   const navigation = useNavigation();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+
+  const notasCobradas = useNotasCobradasStore((state) => state.notasCobradas);
+  const clearNotasCobradas = useNotasCobradasStore((state) => state.clearNotasCobradas);
 
   const vBalance = clientInfo
     ? parseFloat(
@@ -32,22 +34,16 @@ const ClientDebit = ({ clientInfo }) => {
     setIsModalVisible(false);
   };
 
-  const handleModalConfirm = () => {
-    // Aquí puedes poner la lógica que necesitas cuando se confirme el modal
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setSuccessMessage('El recibo se ha procesado correctamente.');
-      setTimeout(() => {
-        setIsModalVisible(false);
-        setSuccessMessage('');
-      }, 2000);
-    }, 2000);
-  };
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+
+  useEffect(() => {
+    console.log('Notas Cobradas Store:', notasCobradas);
+  }, [notasCobradas]);
 
   return (
     <View style={clientDebitStyles.container}>
-      <StatusBar style="light" backgroundColor={theme.colors.secondary} />
+      <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
       {clientInfo === null ? (
         <ActivityIndicator size="large" color={theme.colors.black} style={clientDebitStyles.loader} />
       ) : (
@@ -69,13 +65,10 @@ const ClientDebit = ({ clientInfo }) => {
       </View>
       <InvoiceModal
         isVisible={isModalVisible}
-        isProcessing={isProcessing}
-        successMessage={successMessage}
         onCancel={handleModalCancel}
-        onConfirm={handleModalConfirm}
-        modalData={{ amount: vBalance }}
-        selectedCurrency="Bs"
-        selectedPaymentMethod="Recibo"
+        notasCobradas={notasCobradas}
+        clearNotasCobradas={clearNotasCobradas}
+        formattedDate={formattedDate}
       />
     </View>
   );
