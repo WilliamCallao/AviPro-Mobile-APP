@@ -1,15 +1,15 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, Alert, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/AntDesign";
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions } from 'react-native';
-import useNotasCobradasStore from '../stores/notasCobradasStore'; // Ajusta la ruta
+import useNotasCobradasStore from '../stores/notasCobradasStore';
 import SimpleButton from '../utils/SimpleButton';
 import { theme } from "../assets/Theme";
+import StyledText from '../utils/StyledText';
 
 const screenWidth = Dimensions.get('window').width;
 const fontSizeM = screenWidth * 0.045;
@@ -75,32 +75,32 @@ const SimpleScreen = () => {
       <View style={styles.flexContainer}>
         <ScrollView style={styles.safeArea} contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container} ref={viewRef}>
-            <Text style={styles.companyName}>LOG Notas Cobradas</Text>
-            <Text style={styles.storeInfo}>Store: 02</Text>
-            <Text style={styles.title}>COMPROBANTE DE PAGO</Text>
+            <StyledText boldText style={styles.companyName}>LOG Notas Cobradas</StyledText>
+            <StyledText regularText style={styles.storeInfo}>Store: 02</StyledText>
+            <StyledText boldText style={styles.title}>COMPROBANTE DE PAGO</StyledText>
             <View style={styles.infoSection}>
-              <Text style={styles.sectionText}>Fecha: {formattedDate}</Text>
-              <Text style={styles.sectionText}>N° Cuenta: 11201010212</Text>
+              <StyledText regularText style={styles.sectionText}>Fecha: {formattedDate}</StyledText>
+              <StyledText regularText style={styles.sectionText}>N° Cuenta: 11201010212</StyledText>
             </View>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderText, styles.cellNota]}>Nota</Text>
-                <Text style={[styles.tableHeaderText, styles.cellPago]}>Pago</Text>
-                <Text style={[styles.tableHeaderText, styles.cellAmount]}>Monto</Text>
+                <StyledText boldText style={[styles.tableHeaderText, styles.cellNota]}>Nota</StyledText>
+                <StyledText boldText style={[styles.tableHeaderText, styles.cellPago]}>Pago</StyledText>
+                <StyledText boldText style={[styles.tableHeaderText, styles.cellAmount]}>Monto</StyledText>
               </View>
               {notasCobradas.map((nota, index) => (
                 <View key={index} style={styles.tableRow}>
-                  <Text style={[styles.cell, styles.cellNota]}>{nota.pago_a_nota}</Text>
-                  <Text style={[styles.cell, styles.cellPago]}>{nota.modo_pago === 'E' ? 'Efectivo' : 'Banco'}</Text>
-                  <Text style={[styles.cell, styles.cellAmount]}>
+                  <StyledText regularText style={[styles.cell, styles.cellNota]}>{nota.pago_a_nota}</StyledText>
+                  <StyledText regularText style={[styles.cell, styles.cellPago]}>{nota.modo_pago === 'E' ? 'Efectivo' : 'Banco'}</StyledText>
+                  <StyledText regularText style={[styles.cell, styles.cellAmount]}>
                     {nota.monto.toFixed(2)} {nota.moneda === 'B' ? 'Bs' : '$'}
-                  </Text>
+                  </StyledText>
                 </View>
               ))}
             </View>
             <View style={styles.totalSection}>
-              <Text style={styles.totalText}>Total Pagado: </Text>
-              <Text style={styles.totalAmount}>{notasCobradas.reduce((total, nota) => total + nota.monto, 0).toFixed(2)} Bs.</Text>
+              <StyledText boldText style={styles.totalText}>Total Pagado: </StyledText>
+              <StyledText boldText style={styles.totalAmount}>{notasCobradas.reduce((total, nota) => total + nota.monto, 0).toFixed(2)} Bs.</StyledText>
             </View>
           </View>
         </ScrollView>
@@ -141,19 +141,14 @@ const styles = StyleSheet.create({
   },
   companyName: {
     textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 22,
     marginBottom: 5,
   },
   storeInfo: {
     textAlign: 'center',
-    fontSize: 16,
     marginBottom: 15,
   },
   title: {
     textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 20,
     marginBottom: 20,
   },
   infoSection: {
@@ -165,8 +160,6 @@ const styles = StyleSheet.create({
   },
   notesTitle: {
     textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 18,
     marginVertical: 10,
   },
   table: {
@@ -180,7 +173,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#000',
   },
   tableHeaderText: {
-    fontWeight: 'bold',
     fontSize: fontSizeL,
   },
   tableRow: {
@@ -213,11 +205,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#000',
   },
   totalText: {
-    fontWeight: 'bold',
     fontSize: fontSizeL,
   },
   totalAmount: {
-    fontWeight: 'bold',
     fontSize: fontSizeL,
     marginLeft: 10,
   },
