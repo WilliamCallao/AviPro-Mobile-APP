@@ -5,12 +5,12 @@ export default{
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "dark",
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff",
-      githubUrl: ""
+      backgroundColor: "#9DBAE2",
+      githubUrl: "https://github.com/WilliamCallao/AviPro-Mobile-APP.git"
     },
     
     owner: "williamcallao",
@@ -31,7 +31,7 @@ export default{
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#218DFA"
       },
       package: "com.endurancesoft.avipromobile",
     },
