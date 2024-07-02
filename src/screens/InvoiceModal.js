@@ -36,11 +36,11 @@ const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate }
       <View style={[styles.modalContent, styles.modalShadow]}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container} ref={viewRef}>
-            <StyledText boldText style={styles.companyName}>LOG Notas Cobradas</StyledText>
-            <StyledText regularText style={styles.storeInfo}>Store: 02</StyledText>
-            <StyledText boldText style={styles.title}>COMPROBANTE DE PAGO</StyledText>
+            {/* <StyledText boldText style={styles.companyName}>LOG Notas Cobradas</StyledText> */}
+            {/* <StyledText regularText style={styles.storeInfo}>Store: 02</StyledText> */}
+            <StyledText boldText style={styles.title}>COMPROBANTE</StyledText>
+            <StyledText regularText style={styles.sectionText2}>{formattedDate}</StyledText>
             <View style={styles.infoSection}>
-              <StyledText regularText style={styles.sectionText}>Fecha: {formattedDate}</StyledText>
               <StyledText regularText style={styles.sectionText}>N° Cuenta: 11201010212</StyledText>
             </View>
             <View style={styles.table}>
@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    marginBottom: 20,
   },
   infoSection: {
     marginBottom: 10,
@@ -127,6 +126,10 @@ const styles = StyleSheet.create({
   sectionText: {
     fontSize: fontSizeM,
     marginVertical: 2,
+  },
+  sectionText2: {
+    textAlign: 'center',
+    marginBottom: 20,
   },
   table: {
     marginBottom: 20,
