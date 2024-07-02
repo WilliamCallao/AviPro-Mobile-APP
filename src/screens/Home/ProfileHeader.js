@@ -1,15 +1,15 @@
-// External library imports
+// ProfileHeader.js
 import React, { useCallback, useState, useEffect } from "react";
 import { TouchableOpacity, View, StyleSheet, Dimensions, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Local imports
-import Cascading from "../../animation/CascadingFadeInView";
+import axios from "axios";
 import { theme } from "../../assets/Theme";
 import StyledText from "../../utils/StyledText";
+import Cascading from "../../animation/CascadingFadeInView";
+import { BASE_URL } from "../../../config";
 
 const screenWidth = Dimensions.get('window').width;
 const isCobranzaEnabled = true;
@@ -44,7 +44,30 @@ const ProfileHeader = () => {
       const date = new Date();
       const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
       setCurrentDate(formattedDate);
-    }, [])
+
+      // Verificar y actualizar el estado del código en segundo plano
+      const checkAndUpdateCodeStatus = async () => {
+        try {
+          const codigoActivacion = await AsyncStorage.getItem('@codigo_activacion');
+          if (codigoActivacion) {
+            // Actualizar el último uso
+            await axios.put(`${BASE_URL}/api/mobile/dispositivos/ultimo_uso/${codigoActivacion}`);
+
+            // Verificar el estado del código
+            const estadoResponse = await axios.get(`${BASE_URL}/api/mobile/dispositivos/estado/${codigoActivacion}`);
+            const { estado } = estadoResponse.data;
+
+            if (estado === 'desactivado') {
+              navigation.replace("ActivationScreen");
+            }
+          }
+        } catch (error) {
+          console.error("Error verificando y actualizando el estado del código:", error);
+        }
+      };
+
+      checkAndUpdateCodeStatus();
+    }, [navigation])
   );
 
   const handleDisabledClick = (section) => {

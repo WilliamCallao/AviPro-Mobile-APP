@@ -1,3 +1,4 @@
+// ActivationScreen.js
 import React, { useState, useEffect } from "react";
 import {
   Image,
@@ -81,6 +82,8 @@ const ActivationScreen = () => {
         setActivationSuccess(true);
         setEmpresa("EmpresaAsignada");
         await AsyncStorage.setItem('@empresa_id', dispositivo.empresa_id);
+        await AsyncStorage.setItem('@codigo_activacion', activationCode);
+        console.log("codigo registrado:",activationCode);
         setEmpresaId(dispositivo.empresa_id);
 
         const empresaResponse = await axios.get(
@@ -157,11 +160,11 @@ const ActivationScreen = () => {
                   autoCapitalize="characters"
                   autoCorrect={false}
                 />
-                {empresaId ? (
+                {/* {empresaId ? (
                   <StyledText style={styles.lastCodeText}>
                     Último ID de empresa: {empresaId}
                   </StyledText>
-                ) : null}
+                ) : null} */}
                 {message && (
                   <StyledText style={styles.errorFormat}>{message}</StyledText>
                 )}
