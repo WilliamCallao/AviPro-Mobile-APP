@@ -1,4 +1,3 @@
-// InvoiceModal.js
 import React, { useRef, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Dimensions, Alert } from 'react-native';
 import Modal from 'react-native-modal';
@@ -36,6 +35,7 @@ const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate, 
       <View style={[styles.modalContent, styles.modalShadow]}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container} ref={viewRef}>
+            <View style={styles.decorativeBarTop} />
             <StyledText boldText style={styles.title}>COMPROBANTE</StyledText>
             <StyledText regularText style={styles.sectionText2}>{formattedDate}</StyledText>
             <View style={styles.infoSection}>
@@ -67,6 +67,7 @@ const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate, 
               <StyledText boldText style={styles.totalText}>Total Pagado: </StyledText>
               <StyledText boldText style={styles.totalAmount}>{notasCobradas.reduce((total, nota) => total + nota.monto, 0).toFixed(2)} Bs.</StyledText>
             </View>
+            <View style={styles.decorativeBarBottom} />
           </View>
         </ScrollView>
         <View style={styles.buttonContainer}>
@@ -98,8 +99,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: {
-    paddingTop:50,
-    paddingBottom:70,
+    paddingTop: 50,
+    paddingBottom: 50,
     paddingHorizontal: 20,
     alignSelf: 'stretch',
     borderRadius: 10,
@@ -107,8 +108,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
+  decorativeBarTop: {
+    height: 10,
+    backgroundColor: theme.colors.tertiary,
+    borderRadius: 5,
+    marginBottom: 30,
+  },
+  decorativeBarBottom: {
+    height: 10,
+    backgroundColor: theme.colors.tertiary,
+    borderRadius: 5,
+    marginTop: 30,
+  },
   title: {
     textAlign: 'center',
+    fontSize: fontSizeL,
   },
   infoSection: {
     marginBottom: 10,
@@ -120,6 +134,7 @@ const styles = StyleSheet.create({
   sectionText2: {
     textAlign: 'center',
     marginBottom: 20,
+    fontSize: fontSizeM,
   },
   table: {
     marginBottom: 20,
