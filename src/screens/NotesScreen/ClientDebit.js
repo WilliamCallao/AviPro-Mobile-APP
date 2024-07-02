@@ -33,7 +33,8 @@ const ClientDebit = ({ clientInfo }) => {
         const cliente = response.data;
         setClientName(capitalizeFirstLetter(cliente.nombre));
       } catch (error) {
-        console.error("Error fetching client name: ", error);
+        // console.error("Error fetching client name: ", error);
+        console.log("no hay notas cobradas");
       }
     };
 

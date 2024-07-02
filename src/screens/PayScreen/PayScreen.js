@@ -238,6 +238,14 @@ const PayScreen = ({ route }) => {
                         <Cascading delay={300} animationKey={animationKey}>
                             <View style={styles.noteDetails}>
                                 <View style={styles.noteDetailRow}>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Saldo Pendiente:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</StyledText>
+                                </View>
+                                <View style={styles.noteDetailRow}>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Monto Pagado:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{note.monto_pagado} Bs</StyledText>
+                                </View>
+                                <View style={styles.noteDetailRow}>
                                     <StyledText regularText style={styles.noteDetailLabel}>Importe de la Nota:</StyledText>
                                     <StyledText regularText style={styles.noteDetailValue}>{note.importe_nota} Bs</StyledText>
                                 </View>
@@ -245,14 +253,8 @@ const PayScreen = ({ route }) => {
                                     <StyledText regularText style={styles.noteDetailLabel}>Fecha de la Nota:</StyledText>
                                     <StyledText regularText style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</StyledText>
                                 </View>
-                                <View style={styles.noteDetailRow}>
-                                    <StyledText regularText style={styles.noteDetailLabel}>Monto Pagado:</StyledText>
-                                    <StyledText regularText style={styles.noteDetailValue}>{note.monto_pagado} Bs</StyledText>
-                                </View>
-                                <View style={styles.noteDetailRow}>
-                                    <StyledText regularText style={styles.noteDetailLabel}>Saldo Pendiente:</StyledText>
-                                    <StyledText regularText style={styles.noteDetailValue}>{note.saldo_pendiente} Bs</StyledText>
-                                </View>
+
+
                             </View>
                         </Cascading>
                         <Cascading delay={400} animationKey={animationKey}>
