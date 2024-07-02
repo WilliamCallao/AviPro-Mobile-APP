@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Dimensions, StyleSheet, ActivityIndicator } from "react-native";
 import { theme } from "../../assets/Theme";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import SimpleButton from "../../utils/SimpleButton";
 import StyledText from "../../utils/StyledText";
+import InvoiceModal from "../InvoiceModal";
 
 const screenWidth = Dimensions.get("window").width;
 
 const ClientDebit = ({ clientInfo }) => {
   const navigation = useNavigation();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const vBalance = clientInfo
     ? parseFloat(
@@ -19,6 +23,27 @@ const ClientDebit = ({ clientInfo }) => {
         ).toFixed(2)
       )
     : null;
+
+  const handleReciboPress = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleModalConfirm = () => {
+    // Aquí puedes poner la lógica que necesitas cuando se confirme el modal
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setSuccessMessage('El recibo se ha procesado correctamente.');
+      setTimeout(() => {
+        setIsModalVisible(false);
+        setSuccessMessage('');
+      }, 2000);
+    }, 2000);
+  };
 
   return (
     <View style={clientDebitStyles.container}>
@@ -38,10 +63,20 @@ const ClientDebit = ({ clientInfo }) => {
         />
         <SimpleButton
           text="Recibo"
-          onPress={() => navigation.navigate('Factura')}
+          onPress={handleReciboPress}
           width={screenWidth * 0.4}
         />
       </View>
+      <InvoiceModal
+        isVisible={isModalVisible}
+        isProcessing={isProcessing}
+        successMessage={successMessage}
+        onCancel={handleModalCancel}
+        onConfirm={handleModalConfirm}
+        modalData={{ amount: vBalance }}
+        selectedCurrency="Bs"
+        selectedPaymentMethod="Recibo"
+      />
     </View>
   );
 };
