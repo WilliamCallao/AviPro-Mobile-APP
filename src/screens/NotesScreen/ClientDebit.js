@@ -7,15 +7,50 @@ import SimpleButton from "../../utils/SimpleButton";
 import StyledText from "../../utils/StyledText";
 import InvoiceModal from "../InvoiceModal";
 import useNotasCobradasStore from '../../stores/notasCobradasStore';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../../../config';
 
 const screenWidth = Dimensions.get("window").width;
+
+const capitalizeFirstLetter = (str) => {
+  return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+};
 
 const ClientDebit = ({ clientInfo }) => {
   const navigation = useNavigation();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [clientName, setClientName] = useState('');
+  const [collectorName, setCollectorName] = useState('');
 
   const notasCobradas = useNotasCobradasStore((state) => state.notasCobradas);
   const clearNotasCobradas = useNotasCobradasStore((state) => state.clearNotasCobradas);
+
+  useEffect(() => {
+    const fetchClientName = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${notasCobradas[0]?.empresa_id}/cuenta/${notasCobradas[0]?.cuenta}`);
+        const cliente = response.data;
+        setClientName(capitalizeFirstLetter(cliente.nombre));
+      } catch (error) {
+        console.error("Error fetching client name: ", error);
+      }
+    };
+
+    const fetchCollectorName = async () => {
+      try {
+        const name = await AsyncStorage.getItem('@cobrador_nombre');
+        if (name) {
+          setCollectorName(capitalizeFirstLetter(name));
+        }
+      } catch (error) {
+        console.error("Error fetching collector name: ", error);
+      }
+    };
+
+    fetchClientName();
+    fetchCollectorName();
+  }, [notasCobradas]);
 
   const vBalance = clientInfo
     ? parseFloat(
@@ -69,6 +104,8 @@ const ClientDebit = ({ clientInfo }) => {
         notasCobradas={notasCobradas}
         clearNotasCobradas={clearNotasCobradas}
         formattedDate={formattedDate}
+        clientName={clientName}
+        collectorName={collectorName}
       />
     </View>
   );

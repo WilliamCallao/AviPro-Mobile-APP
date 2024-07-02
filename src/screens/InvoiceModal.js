@@ -12,7 +12,7 @@ const screenWidth = Dimensions.get('window').width;
 const fontSizeM = screenWidth * 0.045;
 const fontSizeL = screenWidth * 0.05;
 
-const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate }) => {
+const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate, clientName, collectorName }) => {
   const viewRef = useRef();
 
   useEffect(() => {
@@ -36,11 +36,11 @@ const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate }
       <View style={[styles.modalContent, styles.modalShadow]}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.container} ref={viewRef}>
-            {/* <StyledText boldText style={styles.companyName}>LOG Notas Cobradas</StyledText> */}
-            {/* <StyledText regularText style={styles.storeInfo}>Store: 02</StyledText> */}
             <StyledText boldText style={styles.title}>COMPROBANTE</StyledText>
             <StyledText regularText style={styles.sectionText2}>{formattedDate}</StyledText>
             <View style={styles.infoSection}>
+              <StyledText regularText style={styles.sectionText}>Cliente: {clientName}</StyledText>
+              <StyledText regularText style={styles.sectionText}>Cobrador: {collectorName}</StyledText>
               <StyledText regularText style={styles.sectionText}>N° Cuenta: 11201010212</StyledText>
             </View>
             <View style={styles.table}>
@@ -81,8 +81,6 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: theme.colors.primary,
     borderRadius: 10,
-    // alignItems: 'center',
-    // flex: 1,
     maxHeight: '80%',
   },
   modalShadow: {
@@ -108,14 +106,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
-  },
-  companyName: {
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  storeInfo: {
-    textAlign: 'center',
-    marginBottom: 15,
   },
   title: {
     textAlign: 'center',
