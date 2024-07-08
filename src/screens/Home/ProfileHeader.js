@@ -128,11 +128,6 @@ const ProfileHeader = () => {
           </TouchableOpacity>
         </View>
       </Cascading>
-      <Cascading delay={300} animationKey={animationKey}>
-        <TouchableOpacity style={styles.clearButton} onPress={handleClearStorage}>
-          <StyledText buttonText>Borrar Datos</StyledText>
-        </TouchableOpacity>
-      </Cascading>
     </View>
   );
 };
