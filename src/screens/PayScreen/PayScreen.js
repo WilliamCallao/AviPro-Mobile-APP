@@ -92,8 +92,6 @@ const PayScreen = ({ route }) => {
             amount: "",
             currency: "",
             payMode: "",
-            checkBankNumber: "",
-            checkBankDate: "",
             account: "",
             reference: "",
             observations: "",
@@ -123,18 +121,13 @@ const PayScreen = ({ route }) => {
             pago_a_nota: note.nro_nota,
             monto: parseFloat(data.amount),
             moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
-            modo_pago: selectedPaymentMethod === 'cheque' ? 'B' : selectedPaymentMethod[0].toUpperCase(),
+            modo_pago: selectedPaymentMethod[0].toUpperCase(),
             observaciones: data.observations || null,
             fecha_registro: new Date()
         };
 
         if (selectedPaymentMethod === 'efectivo' || selectedPaymentMethod === 'banco') {
             commonData.cta_deposito = selectedPaymentMethod === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts);
-        }
-
-        if (selectedPaymentMethod === 'cheque') {
-            commonData.fecha = selectedDate;
-            commonData.referencia = data.reference || null;
         }
 
         try {
@@ -221,7 +214,7 @@ const PayScreen = ({ route }) => {
                     <Cascading delay={200} animationKey={animationKey}>
                         <DropdownSelector
                             title="Deposito"
-                            options={['efectivo', 'banco', 'cheque']}
+                            options={['efectivo', 'banco']}
                             selectedOption={selectedPaymentMethod}
                             onOptionChange={handlePaymentMethodChange}
                         />
@@ -253,8 +246,6 @@ const PayScreen = ({ route }) => {
                                     <StyledText regularText style={styles.noteDetailLabel}>Fecha de la Nota:</StyledText>
                                     <StyledText regularText style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</StyledText>
                                 </View>
-
-
                             </View>
                         </Cascading>
                         <Cascading delay={400} animationKey={animationKey}>
@@ -292,25 +283,6 @@ const PayScreen = ({ route }) => {
                                     options={bankAccounts.map(c => c.descripcion)}
                                     selectedOption={selectedBank}
                                     onOptionChange={setSelectedBank}
-                                />
-                            </Cascading>}
-                        {selectedPaymentMethod === 'cheque' &&
-                            <Cascading delay={480} animationKey={animationKey}>
-                                <DateInputField
-                                    control={control}
-                                    name="checkBankDate"
-                                    title="Fecha Cheque"
-                                    callThrough={setSelectedDate}
-                                    isEditable={true}
-                                />
-                            </Cascading>}
-                        {selectedPaymentMethod === 'cheque' &&
-                            <Cascading delay={500} animationKey={animationKey}>
-                                <InputField
-                                    control={control}
-                                    name="reference"
-                                    title="Referencia"
-                                    type="default"
                                 />
                             </Cascading>}
                         <Cascading delay={560} animationKey={animationKey}>
