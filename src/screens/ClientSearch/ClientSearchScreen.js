@@ -33,8 +33,15 @@ const ClientSearchScreen = () => {
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/notas-pendientes`);
       // console.log("-----------client-serach--------------");
       // console.log(JSON.stringify(response.data, null, 2));
-      setClientesConNotas(response.data);
-      setFilteredData(response.data);
+
+      // Filter out notes with saldo_pendiente equal to 0
+      const filteredClients = response.data.map(client => ({
+        ...client,
+        notas_pendientes: client.notas_pendientes.filter(nota => parseFloat(nota.saldo_pendiente) !== 0)
+      }));
+
+      setClientesConNotas(filteredClients);
+      setFilteredData(filteredClients);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching clientes: ", error);

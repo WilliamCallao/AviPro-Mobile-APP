@@ -90,7 +90,7 @@ const noteItemstyles = StyleSheet.create({
   line: {
     marginVertical: 5,
     backgroundColor: theme.colors.otherWhite,
-    width: windowWidth * 0.85,
+    width: windowWidth * 0.80,
     height: 2,
   },
   column: {
