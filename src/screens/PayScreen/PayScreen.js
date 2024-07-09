@@ -125,7 +125,6 @@ const PayScreen = ({ route }) => {
             sucursal_id: note.sucursal_id,
             cuenta: note.cuenta,
             fecha: format(new Date(), 'dd-MM-yyyy'),
-            referencia: null,
             pago_a_nota: note.nro_nota,
             monto: parseFloat(data.amount),
             moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
@@ -134,23 +133,10 @@ const PayScreen = ({ route }) => {
             observaciones: data.observations || '',
             nro_factura: note.nro_factura,
             cobrador_id: cobrador_id,
-            fecha_registro: format(new Date(), 'dd-MM-yyyy HH:mm:ss')
         };
 
         try {
-            await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/register`, commonData);
-
-            await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
-                monto_pagado: parseFloat(data.amount)
-            });
-
-            // Registrar el pago en el historial
-            await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, {
-                empresa_id: note.empresa_id,
-                cobrador_id: commonData.cobrador_id,
-                nombre_cliente: clientName,
-                monto: parseFloat(data.amount)
-            });
+            await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
 
             // Agregar la nota cobrada al store de Zustand
             addNotaCobrada(commonData);
@@ -164,38 +150,9 @@ const PayScreen = ({ route }) => {
             }, 2000);
         } catch (error) {
             console.error('Error updating note:', error);
-            await handleRollback(commonData, data.amount, commonData.cobrador_id, clientName);
             setIsProcessing(false);
             setSuccessMessage('');
             Alert.alert('Error', 'Ocurrió un error al registrar el pago');
-        }
-    };
-
-    const handleRollback = async (commonData, amount, cobrador_id, nombre_cliente) => {
-        try {
-            await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/rollback`, {
-                empresa_id: commonData.empresa_id,
-                sucursal_id: commonData.sucursal_id,
-                cuenta: commonData.cuenta,
-                pago_a_nota: commonData.pago_a_nota
-            });
-
-            await axios.post(`${BASE_URL}/api/mobile/notas-pendientes/rollback`, {
-                empresa_id: commonData.empresa_id,
-                sucursal_id: commonData.sucursal_id,
-                cuenta: commonData.cuenta,
-                nro_nota: commonData.pago_a_nota,
-                monto: parseFloat(amount)
-            });
-
-            await axios.post(`${BASE_URL}/api/mobile/historial-cobros/rollback`, {
-                empresa_id: commonData.empresa_id,
-                cobrador_id: cobrador_id,
-                nombre_cliente: nombre_cliente,
-                monto: parseFloat(amount)
-            });
-        } catch (rollbackError) {
-            console.error('Error during rollback:', rollbackError);
         }
     };
 
