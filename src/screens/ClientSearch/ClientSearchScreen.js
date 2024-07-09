@@ -30,7 +30,9 @@ const ClientSearchScreen = () => {
   const fetchClientes = useCallback(async (empresaId) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/con-notas`);
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/notas-pendientes`);
+      // console.log("-----------client-serach--------------");
+      // console.log(JSON.stringify(response.data, null, 2));
       setClientesConNotas(response.data);
       setFilteredData(response.data);
       setLoading(false);

@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
         borderColor: '#D6E3F5',
         paddingHorizontal: 15,
         justifyContent: 'center',
-        height: 46,
+        minHeight: 46,
         width: width - 40,
     },
     menuTrigger: {
@@ -67,7 +67,8 @@ const styles = StyleSheet.create({
     },
     triggerText: {
         fontWeight: "bold",
-        color: 'black'
+        color: 'black',
+        flexShrink: 1,
     },
     optionsContainer: {
         width: width - 40,

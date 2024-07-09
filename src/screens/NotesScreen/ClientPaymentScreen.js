@@ -30,6 +30,7 @@ const ClientPaymentScreen = ({ route }) => {
     try {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/cuenta/${cuenta}`);
+      // console.log("---------client-payment-screen--------");
       // console.log(JSON.stringify(response.data, null, 2));
       setClientData(response.data);
     } catch (error) {

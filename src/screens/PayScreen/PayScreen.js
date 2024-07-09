@@ -30,7 +30,7 @@ const PayScreen = ({ route }) => {
     const [cashAccounts, setCashAccounts] = useState([]);
     const [bankAccounts, setBankAccounts] = useState([]);
     const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -83,6 +83,10 @@ const PayScreen = ({ route }) => {
         setAnimationKey(Date.now());
     };
 
+    const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    };
+
     const {
         control,
         handleSubmit,
@@ -126,8 +130,8 @@ const PayScreen = ({ route }) => {
             fecha_registro: new Date()
         };
 
-        if (selectedPaymentMethod === 'efectivo' || selectedPaymentMethod === 'banco') {
-            commonData.cta_deposito = selectedPaymentMethod === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts);
+        if (selectedPaymentMethod.toLowerCase() === 'efectivo' || selectedPaymentMethod.toLowerCase() === 'banco') {
+            commonData.cta_deposito = selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts);
         }
 
         try {
@@ -214,7 +218,7 @@ const PayScreen = ({ route }) => {
                     <Cascading delay={200} animationKey={animationKey}>
                         <DropdownSelector
                             title="Deposito"
-                            options={['efectivo', 'banco']}
+                            options={['efectivo', 'banco'].map(capitalizeFirstLetter)}
                             selectedOption={selectedPaymentMethod}
                             onOptionChange={handlePaymentMethodChange}
                         />
@@ -267,20 +271,20 @@ const PayScreen = ({ route }) => {
                                 handleCurrencyChange={handleCurrencyChange}
                             />
                         </Cascading>
-                        {selectedPaymentMethod === 'efectivo' &&
+                        {selectedPaymentMethod.toLowerCase() === 'efectivo' &&
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={cashAccounts.map(c => c.descripcion)}
+                                    options={cashAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
                                     selectedOption={selectedCash}
                                     onOptionChange={setSelectedCash}
                                 />
                             </Cascading>}
-                        {selectedPaymentMethod === 'banco' &&
+                        {selectedPaymentMethod.toLowerCase() === 'banco' &&
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={bankAccounts.map(c => c.descripcion)}
+                                    options={bankAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
                                     selectedOption={selectedBank}
                                     onOptionChange={setSelectedBank}
                                 />

@@ -127,6 +127,9 @@ const ProfileHeader = () => {
             <StyledText boldText style={styles.buttonText2}>Ventas</StyledText>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={styles.clearButton} onPress={handleClearStorage}>
+          <StyledText buttonText>Borrar Datos</StyledText>
+        </TouchableOpacity>
       </Cascading>
     </View>
   );
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
     color: '#8097B6',
   },
   clearButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: 'red',
     padding: 10,
     borderRadius: 20,
     marginHorizontal: 20,
