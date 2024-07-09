@@ -12,13 +12,13 @@ const styles = StyleSheet.create({
   boldText: {
     fontWeight: 'bold',
     fontSize: regularTextSize,
-    color: theme.colors.tertiary,
+    color: 'black',
   },
   boldTextUpper: {
     fontWeight: 'bold',
     fontSize: bigTextSize,
     textTransform: 'uppercase',
-    color: theme.colors.tertiary,
+    color: 'black',
   },
   regularText: {
     fontSize: regularTextSize,
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   boldCenterText: {
     fontSize: regularTextSize,
     fontWeight: 'bold',
-    color: theme.colors.tertiary,
+    color: 'black',
     textTransform: 'uppercase',
     textAlign: 'center',
   },

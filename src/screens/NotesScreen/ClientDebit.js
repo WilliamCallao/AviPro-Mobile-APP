@@ -115,10 +115,10 @@ const ClientDebit = ({ clientInfo }) => {
 const clientDebitStyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 22,
-    width: screenWidth - 40,
+    borderRadius: 20,
+    width: screenWidth - 20,
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   spaceButtons: {
     flexDirection: "row",
@@ -127,17 +127,10 @@ const clientDebitStyles = StyleSheet.create({
     marginBottom: 10,
   },
   text: {
-    padding: 15,
+    padding: 10,
   },
   loader: {
     padding: 18,
-  },
-  button: {
-    backgroundColor: theme.colors.tertiary,
-    borderRadius: 22,
-    paddingVertical: 12,
-    padding: 10,
-    width: screenWidth * 0.4,
   },
 });
 
