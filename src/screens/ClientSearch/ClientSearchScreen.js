@@ -138,7 +138,7 @@ const ClientSearchScreen = () => {
               </TouchableOpacity>
               <View style={styles.aviContainer}>
                 <StyledText boldCenterText style={styles.avi}>
-                  Cobranzas
+                  Clientes
                 </StyledText>
               </View>
             </View>
@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
   },
   up: {
     backgroundColor: theme.colors.secondary,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     elevation: 7,
   },
   container: {
@@ -192,8 +192,9 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: 10,
+    paddingTop: 20,
+    paddingVertical: 10,
     alignItems: "center",
   },
   back: {
@@ -208,6 +209,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: theme.colors.skyBlue,
+    marginLeft: 10,
+    height: 60,
+    borderRadius: 25,
   },
   avi: {
     marginRight: 40,

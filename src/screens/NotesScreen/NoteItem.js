@@ -70,7 +70,7 @@ const noteItemstyles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     marginVertical: 10,
-    marginHorizontal: 10,
+    marginHorizontal: 20,
     borderWidth: 2,
     borderLeftWidth: 2,
     borderRadius: 15,
