@@ -8,10 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 import Cascading from "../../animation/CascadingFadeInView";
 import { theme } from "../../assets/Theme";
 import InputWithDropdown from "./InputWithDropdown";
-import DateInputField from "../../components/DateInputField";
 import DropdownSelector from "../../components/DropdownSelector";
 import Dropdown from "./DropdownPay";
-import InputField from "../../components/InputField.js";
 import ObservationsInputField from "./ObservationsInputField";
 import { format } from "date-fns";
 import axios from 'axios';
@@ -24,6 +22,8 @@ const screenWidth = Dimensions.get("window").width;
 
 const PayScreen = ({ route }) => {
     const { note } = route.params;
+    console.log("---------pay-screen--------");
+    console.log(JSON.stringify(note, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
@@ -33,7 +33,7 @@ const PayScreen = ({ route }) => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
-    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'dd-MM-yyyy HH:mm:ss'));
     const [clientName, setClientName] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -118,24 +118,26 @@ const PayScreen = ({ route }) => {
             return account ? account.cuenta : '';
         };
 
+        const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
+        
         const commonData = {
             empresa_id: note.empresa_id,
             sucursal_id: note.sucursal_id,
             cuenta: note.cuenta,
+            fecha: format(new Date(), 'dd-MM-yyyy'),
+            referencia: null,
             pago_a_nota: note.nro_nota,
             monto: parseFloat(data.amount),
             moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
             modo_pago: selectedPaymentMethod[0].toUpperCase(),
-            observaciones: data.observations || null,
-            fecha_registro: new Date()
+            cta_deposito: selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
+            observaciones: data.observations || '',
+            nro_factura: note.nro_factura,
+            cobrador_id: cobrador_id,
+            fecha_registro: format(new Date(), 'dd-MM-yyyy HH:mm:ss')
         };
 
-        if (selectedPaymentMethod.toLowerCase() === 'efectivo' || selectedPaymentMethod.toLowerCase() === 'banco') {
-            commonData.cta_deposito = selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts);
-        }
-
         try {
-            const name = await AsyncStorage.getItem('@cobrador_id');
             await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/register`, commonData);
 
             await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
@@ -145,7 +147,7 @@ const PayScreen = ({ route }) => {
             // Registrar el pago en el historial
             await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, {
                 empresa_id: note.empresa_id,
-                cobrador_id: name,
+                cobrador_id: commonData.cobrador_id,
                 nombre_cliente: clientName,
                 monto: parseFloat(data.amount)
             });
@@ -162,7 +164,7 @@ const PayScreen = ({ route }) => {
             }, 2000);
         } catch (error) {
             console.error('Error updating note:', error);
-            await handleRollback(commonData, data.amount, name, clientName);
+            await handleRollback(commonData, data.amount, commonData.cobrador_id, clientName);
             setIsProcessing(false);
             setSuccessMessage('');
             Alert.alert('Error', 'Ocurrió un error al registrar el pago');
@@ -354,7 +356,6 @@ const PayScreen = ({ route }) => {
 
 const styles = StyleSheet.create({
     cover: {
-        backgroundColor: theme.colors.primary,
         zIndex: 1,
     },
     up: {
@@ -434,7 +435,6 @@ const styles = StyleSheet.create({
     },
     modalText: {
         marginVertical: 10,
-        // color: theme.colors.primary,
     },
     modalDetailText: {
         marginVertical: 5,
