@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   line: {
-    marginVertical: 3,
+    marginVertical: 10,
     backgroundColor: theme.colors.otherWhite,
     width: windowWidth * 0.8,
     height: 2,

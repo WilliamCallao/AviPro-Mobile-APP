@@ -1,10 +1,11 @@
 import React from "react";
 import {
-  View, StyleSheet, TouchableWithoutFeedback
+  View, StyleSheet, TouchableWithoutFeedback, Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { theme } from "../../assets/Theme";
 import StyledText from "../../utils/StyledText";
+const windowWidth = Dimensions.get('window').width;
 
 const NoteItem = ({ note }) => {
   const navigation = useNavigation();
@@ -22,37 +23,40 @@ const NoteItem = ({ note }) => {
     <TouchableWithoutFeedback onPress={() => navigation.navigate("PayScreen", { note })}>
       <View style={noteItemstyles.container}>
         <View style={noteItemstyles.row}>
-          <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>Nota:</StyledText>
-            <StyledText regularText style={noteItemstyles.value}>{note.nro_nota}</StyledText>
+          <View style={noteItemstyles.column2}>
+            <StyledText boldText style={noteItemstyles.label}>Nota:</StyledText>
+            <StyledText boldText style={noteItemstyles.value}>{note.nro_nota}</StyledText>
           </View>
-          <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>   Factura:</StyledText>
-            <StyledText regularText style={noteItemstyles.value}>   {note.nro_factura}</StyledText>
+          <View style={noteItemstyles.column2}>
+            <StyledText boldText style={noteItemstyles.label}>Factura:</StyledText>
+            <StyledText boldText style={noteItemstyles.value}>{note.nro_factura}</StyledText>
           </View>
-          <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>Saldo:</StyledText>
+          <View style={noteItemstyles.column2}>
+            <StyledText boldText style={noteItemstyles.label}>Saldo:</StyledText>
             <StyledText money style={noteItemstyles.value}>{note.saldo_pendiente} Bs</StyledText>
           </View>
         </View>
+        <View style={noteItemstyles.lineContainer}>
+         <View style={noteItemstyles.line}></View>
+        </View>
         <View style={noteItemstyles.row}>
           <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>Fecha Venta:</StyledText>
+            <StyledText regularText style={noteItemstyles.label}>Fecha Venta:</StyledText>
             <StyledText regularText style={noteItemstyles.value}>{formatDate(note.fecha_venta)}</StyledText>
           </View>
           <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>Vencimiento:</StyledText>
-            <StyledText regularText style={noteItemstyles.value}>{formatDate(note.fecha_vence)}</StyledText>
+            <StyledText regularText style={noteItemstyles.label}>   Vencimiento:</StyledText>
+            <StyledText regularText style={noteItemstyles.value}>   {formatDate(note.fecha_vence)}</StyledText>
           </View>
         </View>
         <View style={noteItemstyles.row}>
           <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>Importe:</StyledText>
+            <StyledText regularText style={noteItemstyles.label}>Importe:</StyledText>
             <StyledText regularText style={noteItemstyles.value}>{note.importe_nota} Bs</StyledText>
           </View>
           <View style={noteItemstyles.column}>
-            <StyledText regularBlackText style={noteItemstyles.label}>Monto Pagado:</StyledText>
-            <StyledText regularText style={noteItemstyles.value}>{note.monto_pagado} Bs</StyledText>
+            <StyledText regularText style={noteItemstyles.label}>   Monto Pagado:</StyledText>
+            <StyledText regularText style={noteItemstyles.value}>   {note.monto_pagado} Bs</StyledText>
           </View>
         </View>
       </View>
@@ -63,12 +67,13 @@ const NoteItem = ({ note }) => {
 const noteItemstyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.primary,
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 15,
-    marginVertical: 8,
-    marginHorizontal: 20,
+    marginVertical: 10,
+    marginHorizontal: 10,
     borderWidth: 2,
-    borderRadius: 20,
+    borderLeftWidth: 2,
+    borderRadius: 15,
     borderColor: theme.colors.otherWhite,
     overflow: "hidden",
   },
@@ -76,15 +81,22 @@ const noteItemstyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginVertical: 3,
+  },
+  lineContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  line: {
     marginVertical: 5,
+    backgroundColor: theme.colors.otherWhite,
+    width: windowWidth * 0.85,
+    height: 2,
   },
   column: {
     flex: 1,
   },
-  label: {
-    color: theme.colors.darkGray,
-  },
-  value: {
+  column2: {
   },
 });
 

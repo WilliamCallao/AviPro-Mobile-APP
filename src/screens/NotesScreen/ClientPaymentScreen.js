@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   headerWithComponents: {
     zIndex: 1,
     backgroundColor: theme.colors.secondary,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     elevation: 7,
     paddingBottom: 10,
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 15,
+    borderRadius: 25,
     width: 60,
     height: 60,
   },
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 15,
+    borderRadius: 25,
     marginLeft: 10,
   },
   text: {

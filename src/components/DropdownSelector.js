@@ -50,10 +50,10 @@ const DropdownSelector = ({ title, options, selectedOption, onOptionChange }) =>
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
-    borderRadius: 20,
+    marginHorizontal: 10,
+    borderRadius: 25,
     backgroundColor: theme.colors.skyBlue,
-    padding: 7,
+    padding: 10,
     flexDirection: "row",
     justifyContent: 'flex-end',
   },
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: 'center',
-    borderRadius: 20,
+    borderRadius: 15,
     flex:1
   },
   menuTrigger: {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 25,
     backgroundColor: theme.colors.tertiary,
-    borderRadius: 22,
+    borderRadius: 20,
     width: 200,
   },
   menuTriggerInter: {

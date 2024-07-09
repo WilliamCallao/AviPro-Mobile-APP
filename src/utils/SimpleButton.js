@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.tertiary,
-    borderRadius: 25,
+    borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 25,
   },

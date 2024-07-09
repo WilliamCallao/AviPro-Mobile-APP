@@ -91,12 +91,12 @@ const ClientDebit = ({ clientInfo }) => {
         <SimpleButton
           text="Automático"
           onPress={() => navigation.navigate("SelectPayModeScreen", { clientInfo })}
-          width={screenWidth * 0.4}
+          width={screenWidth * 0.435}
         />
         <SimpleButton
           text="Recibo"
           onPress={handleReciboPress}
-          width={screenWidth * 0.4}
+          width={screenWidth * 0.435}
         />
       </View>
       <InvoiceModal
@@ -115,7 +115,7 @@ const ClientDebit = ({ clientInfo }) => {
 const clientDebitStyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 20,
+    borderRadius: 25,
     width: screenWidth - 20,
     alignSelf: "center",
     marginBottom: 10,
@@ -130,7 +130,7 @@ const clientDebitStyles = StyleSheet.create({
     padding: 10,
   },
   loader: {
-    padding: 18,
+    padding: 14,
   },
 });
 
