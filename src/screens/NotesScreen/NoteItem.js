@@ -67,8 +67,8 @@ const NoteItem = ({ note }) => {
 const noteItemstyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     marginVertical: 10,
     marginHorizontal: 10,
     borderWidth: 2,
