@@ -7,6 +7,8 @@ import Modal from 'react-native-modal';
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
 
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const PaidNoteItem = ({ note, onEdit, onDelete }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -44,12 +46,10 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
       });
       if (response.status === 200) {
         setSuccessMessage('Nota cobrada eliminada correctamente');
-        setTimeout(() => {
-          setSuccessMessage('');
-          setIsModalVisible(false);
-          onDelete(note);
-          setIsProcessing(false);
-        }, 2000);
+        setIsProcessing(false);
+        await wait(1000);
+        setIsModalVisible(false);
+        onDelete(note);
       } else {
         throw new Error('Failed to delete the note');
       }
@@ -99,7 +99,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
           {isProcessing ? (
             <>
               <ActivityIndicator size="large" color={theme.colors.black} />
-              <StyledText style={styles.modalText}>Eliminando nota...</StyledText>
+              <StyledText regularText style={styles.modalText}>Eliminando nota...</StyledText>
             </>
           ) : (
             successMessage ? (
@@ -197,7 +197,6 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     color: 'white',
-    fontSize: 16,
     textAlign: 'center',
   },
   modalShadow: {
