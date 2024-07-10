@@ -22,22 +22,20 @@ const screenWidth = Dimensions.get("window").width;
 
 const AutomaticPayScreen = ({ route }) => {
     const { clientInfo } = route.params;
-    console.log(JSON.stringify(clientInfo, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
     const [cashAccounts, setCashAccounts] = useState([]);
     const [bankAccounts, setBankAccounts] = useState([]);
     const [selectedCurrency, setSelectedCurrency] = useState('BS');
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
-    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'dd-MM-yyyy HH:mm:ss'));
+    const [selectedCriteria, setSelectedCriteria] = useState('PEPS');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [paidNotes, setPaidNotes] = useState([]);
-    const [selectedCriteria, setSelectedCriteria] = useState('PEPS');
     const addNotaCobrada = useNotasCobradasStore((state) => state.addNotaCobrada);
 
     useEffect(() => {
@@ -72,6 +70,10 @@ const AutomaticPayScreen = ({ route }) => {
         setAnimationKey(Date.now());
     };
 
+    const handleCriteriaChange = (option) => {
+        setSelectedCriteria(option);
+    };
+
     const capitalizeFirstLetter = (string) => {
         return string.charAt(0).toUpperCase() + string.slice(1);
     };
@@ -92,6 +94,40 @@ const AutomaticPayScreen = ({ route }) => {
     });
 
     const modalConfirmacion = (data) => {
+        const amount = parseFloat(data.amount);
+        const sortedNotes = [...clientInfo.notas_pendientes];
+
+        switch (selectedCriteria) {
+            case 'PEPS':
+                sortedNotes.sort((a, b) => new Date(a.fecha_venta) - new Date(b.fecha_venta));
+                break;
+            case 'UEPS':
+                sortedNotes.sort((a, b) => new Date(b.fecha_venta) - new Date(a.fecha_venta));
+                break;
+            case 'MayorMenor':
+                sortedNotes.sort((a, b) => parseFloat(b.importe_nota) - parseFloat(a.importe_nota));
+                break;
+            case 'MenorMayor':
+                sortedNotes.sort((a, b) => parseFloat(a.importe_nota) - parseFloat(b.importe_nota));
+                break;
+            default:
+                break;
+        }
+
+        let remainingAmount = amount;
+        const notesToPay = sortedNotes.map(note => {
+            if (remainingAmount > 0) {
+                const amountToPay = Math.min(remainingAmount, parseFloat(note.saldo_pendiente));
+                remainingAmount -= amountToPay;
+                return {
+                    ...note,
+                    monto_pagado: amountToPay.toFixed(2)
+                };
+            }
+            return null;
+        }).filter(note => note !== null);
+
+        setPaidNotes(notesToPay);
         setIsModalVisible(true);
         setModalData(data);
     };
@@ -109,41 +145,12 @@ const AutomaticPayScreen = ({ route }) => {
 
         const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
 
-        let sortedNotes = [...clientInfo.notas_pendientes];
-
-        if (selectedCriteria === 'PEPS') {
-            sortedNotes.sort((a, b) => new Date(a.fecha_venta) - new Date(b.fecha_venta));
-        } else if (selectedCriteria === 'UEPS') {
-            sortedNotes.sort((a, b) => new Date(b.fecha_venta) - new Date(a.fecha_venta));
-        } else if (selectedCriteria === 'Mayor importe a menor') {
-            sortedNotes.sort((a, b) => parseFloat(b.importe_nota) - parseFloat(a.importe_nota));
-        } else if (selectedCriteria === 'Menor importe a mayor') {
-            sortedNotes.sort((a, b) => parseFloat(a.importe_nota) - parseFloat(b.importe_nota));
-        }
-
-        const amountToPay = parseFloat(data.amount);
-        let remainingAmount = amountToPay;
-        const notesToPay = [];
-
-        for (let note of sortedNotes) {
-            if (remainingAmount <= 0) break;
-
-            const noteSaldoPendiente = parseFloat(note.saldo_pendiente);
-            if (remainingAmount >= noteSaldoPendiente) {
-                notesToPay.push({ ...note, monto_pagado: noteSaldoPendiente });
-                remainingAmount -= noteSaldoPendiente;
-            } else {
-                notesToPay.push({ ...note, monto_pagado: remainingAmount });
-                remainingAmount = 0;
-            }
-        }
-
         try {
-            for (let note of notesToPay) {
-                const paymentData = {
-                    empresa_id: note.empresa_id,
-                    sucursal_id: note.sucursal_id,
-                    cuenta: note.cuenta,
+            for (const note of paidNotes) {
+                const commonData = {
+                    empresa_id: clientInfo.empresa_id,
+                    sucursal_id: clientInfo.sucursal_id,
+                    cuenta: clientInfo.cuenta,
                     fecha: format(new Date(), 'dd-MM-yyyy'),
                     pago_a_nota: note.nro_nota,
                     monto: note.monto_pagado,
@@ -153,14 +160,14 @@ const AutomaticPayScreen = ({ route }) => {
                     observaciones: data.observations || '',
                     nro_factura: note.nro_factura,
                     cobrador_id: cobrador_id,
-                    fecha_registro: format(new Date(), 'dd-MM-yyyy HH:mm:ss')
                 };
 
-                await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, paymentData);
-                addNotaCobrada(paymentData);
+                await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
+
+                // Agregar la nota cobrada al store de Zustand
+                addNotaCobrada(commonData);
             }
 
-            setPaidNotes(notesToPay);
             setIsProcessing(false);
             setSuccessMessage('El pago ha sido registrado correctamente');
             setTimeout(() => {
@@ -205,9 +212,9 @@ const AutomaticPayScreen = ({ route }) => {
                     <Cascading delay={300} animationKey={animationKey}>
                         <DropdownSelector
                             title="Criterio de Cancelación"
-                            options={['PEPS', 'UEPS', 'Mayor importe a menor', 'Menor importe a mayor']}
+                            options={['PEPS', 'UEPS', 'MayorMenor', 'MenorMayor']}
                             selectedOption={selectedCriteria}
-                            onOptionChange={setSelectedCriteria}
+                            onOptionChange={handleCriteriaChange}
                         />
                     </Cascading>
                 </View>
@@ -223,7 +230,7 @@ const AutomaticPayScreen = ({ route }) => {
                             <View style={styles.noteDetails}>
                                 <View style={styles.noteDetailRow}>
                                     <StyledText regularText style={styles.noteDetailLabel}>Saldo Pendiente:</StyledText>
-                                    <StyledText regularText style={styles.noteDetailValue}>{clientInfo.notas_pendientes.reduce((sum, note) => sum + parseFloat(note.saldo_pendiente), 0)} Bs</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{clientInfo.notas_pendientes.reduce((acc, note) => acc + parseFloat(note.saldo_pendiente), 0).toFixed(2)} Bs</StyledText>
                                 </View>
                             </View>
                         </Cascading>
@@ -235,7 +242,6 @@ const AutomaticPayScreen = ({ route }) => {
                                 type="numeric"
                                 rules={{
                                     required: "Este campo es requerido",
-                                    validate: value => parseFloat(value) <= clientInfo.notas_pendientes.reduce((sum, note) => sum + parseFloat(note.saldo_pendiente), 0) || "El monto excede el saldo pendiente",
                                     pattern: {
                                         value: /^[0-9]+([.][0-9]{0,2})?$/,
                                         message: "Ingrese solo números",
@@ -247,7 +253,7 @@ const AutomaticPayScreen = ({ route }) => {
                             />
                         </Cascading>
                         {selectedPaymentMethod.toLowerCase() === 'efectivo' &&
-                            <Cascading delay={580} animationKey={animationKey}>
+                            <Cascading delay={600} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
                                     options={cashAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
@@ -256,7 +262,7 @@ const AutomaticPayScreen = ({ route }) => {
                                 />
                             </Cascading>}
                         {selectedPaymentMethod.toLowerCase() === 'banco' &&
-                            <Cascading delay={580} animationKey={animationKey}>
+                            <Cascading delay={600} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
                                     options={bankAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
@@ -264,7 +270,7 @@ const AutomaticPayScreen = ({ route }) => {
                                     onOptionChange={setSelectedBank}
                                 />
                             </Cascading>}
-                        <Cascading delay={660} animationKey={animationKey}>
+                        <Cascading delay={700} animationKey={animationKey}>
                             <ObservationsInputField
                                 control={control}
                                 name="observations"
@@ -302,9 +308,27 @@ const AutomaticPayScreen = ({ route }) => {
                         ) : (
                             <>
                                 <StyledText regularBlackText style={styles.modalText}>¿Está seguro de realizar este cobro?</StyledText>
-                                {paidNotes.map((note, index) => (
-                                    <StyledText key={index} regularText style={styles.modalDetailText}>Nota {note.nro_nota}: {note.monto_pagado} Bs</StyledText>
-                                ))}
+                                <ScrollView style={styles.notesContainer}>
+                                    {paidNotes.map(note => (
+                                        <View key={note.nro_nota}>
+                                            <StyledText boldText>{note.nro_nota}</StyledText>
+                                            <View style={styles.noteRow}>
+                                                <StyledText regularText>Monto Pagado: </StyledText>
+                                                <StyledText money>{note.monto_pagado} Bs</StyledText>
+                                            </View>
+                                            <View style={styles.noteRow}>
+                                                <StyledText regularText style={{marginBottom:15}}>
+                                                    {parseFloat(note.monto_pagado) === parseFloat(note.saldo_pendiente) ? 'Pago Completo' : 'Pago Parcial'}
+                                                </StyledText>
+                                            </View>
+                                        </View>
+                                    ))}
+                                    <View style={styles.noteRow}>
+                                        <StyledText boldText>Total:</StyledText>
+                                        <StyledText money>{paidNotes.reduce((acc, note) => acc + parseFloat(note.monto_pagado), 0).toFixed(2)} Bs</StyledText>
+                                    </View>
+                                </ScrollView>
+
                                 <View style={styles.modalButtonContainer}>
                                     <TouchableOpacity
                                         style={[styles.modalButton, { backgroundColor: 'red' }]}
@@ -410,9 +434,6 @@ const styles = StyleSheet.create({
     modalText: {
         marginVertical: 10,
     },
-    modalDetailText: {
-        marginVertical: 5,
-    },
     modalButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -440,6 +461,14 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.75,
         shadowRadius: 10,
         elevation: 90,
+    },
+    notesContainer: {
+        maxHeight: 900,
+        marginVertical: 10,
+    },
+    noteRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
 });
 
