@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform } from 'react-native';
+import React, { useState, useCallback, useEffect } from "react";
+import { SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, View, Dimensions, ScrollView, Platform, ActivityIndicator, Alert } from 'react-native';
+import Modal from 'react-native-modal';
 import { useForm } from "react-hook-form";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -7,20 +8,50 @@ import { StatusBar } from 'expo-status-bar';
 import Cascading from "../../animation/CascadingFadeInView";
 import { theme } from "../../assets/Theme";
 import InputWithDropdown from "./InputWithDropdown";
-import DateInputField from "../../components/DateInputField";
 import DropdownSelector from "../../components/DropdownSelector";
 import Dropdown from "./DropdownPay";
-import InputField from "../../components/InputField.js";
 import ObservationsInputField from "./ObservationsInputField";
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
+import axios from 'axios';
+import { BASE_URL } from '../../../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import StyledText from "../../utils/StyledText";
+import useNotasCobradasStore from '../../stores/notasCobradasStore';
 
 const screenWidth = Dimensions.get("window").width;
 
 const AutomaticPayScreen = ({ route }) => {
-    const { note } = route.params;
-    console.log(JSON.stringify(note, null, 2));
+    const { clientInfo } = route.params;
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
+
+    const [cashAccounts, setCashAccounts] = useState([]);
+    const [bankAccounts, setBankAccounts] = useState([]);
+    const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
+    const [selectedCash, setSelectedCash] = useState('');
+    const [selectedBank, setSelectedBank] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const addNotaCobrada = useNotasCobradasStore((state) => state.addNotaCobrada);
+
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            try {
+                const response = await axios.get(`${BASE_URL}/api/mobile/cuentas-deposito/empresa/${clientInfo.empresa_id}`);
+                const cuentas = response.data;
+                setCashAccounts(cuentas.filter(c => c.tipo === 'E').map(c => ({ descripcion: c.descripcion, cuenta: c.cuenta })));
+                setBankAccounts(cuentas.filter(c => c.tipo === 'B').map(c => ({ descripcion: c.descripcion, cuenta: c.cuenta })));
+                setSelectedCash(cuentas.filter(c => c.tipo === 'E')[0]?.descripcion || '');
+                setSelectedBank(cuentas.filter(c => c.tipo === 'B')[0]?.descripcion || '');
+            } catch (error) {
+                console.error("Error fetching deposit accounts: ", error);
+            }
+        };
+
+        fetchAccounts();
+    }, [clientInfo.empresa_id]);
 
     useFocusEffect(
         useCallback(() => {
@@ -28,24 +59,18 @@ const AutomaticPayScreen = ({ route }) => {
         }, [])
     );
 
-    const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
     const handleCurrencyChange = (option) => {
         setSelectedCurrency(option);
     };
 
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
     const handlePaymentMethodChange = (option) => {
         setSelectedPaymentMethod(option);
+        setAnimationKey(Date.now());
     };
 
-    const [selectedCash, setSelectedCash] = useState('CTA 11101010001');
-    const cash_accounts = ['CTA 11101010001', 'CTA 11101010002', 'CTA 11101020001', 'CTA 11101020002'];
-    const [selectedDate, setSelectedDate] = useState(formatDate(new Date(), 'yyyy-MM-dd'));
-    const [selectedBank, setSelectedBank] = useState('FIE.CTA 6-8918');
-    const banks = ['FIE.CTA 6-8918', 'BISA.CTA 4454770019', 'UNION.CTA 1-18604442', 'BNB.CTA 300017-4016', 'BISA.CTA 4454772011'];
-
-    const [selectedCriteria, setSelectedCriteria] = useState('PEPS');
-    const criteriaOptions = ['PEPS', 'UEPS', 'MayorMenor', 'MenorMayor'];
+    const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    };
 
     const {
         control,
@@ -56,27 +81,65 @@ const AutomaticPayScreen = ({ route }) => {
             amount: "",
             currency: "",
             payMode: "",
-            checkBankNumber: "",
-            checkBankDate: "",
             account: "",
             reference: "",
             observations: "",
         },
     });
 
-    const modalConfirmacion = (data) =>
-        Alert.alert('Confirmación', `¿Está seguro de realizar este cobro?\n Monto: ${data.amount} ${selectedCurrency}\n Método de pago: ${selectedPaymentMethod}`, [
-            {
-                text: 'Cancelar',
-                onPress: () => { return; },
-                style: 'cancel',
-            },
-            { text: 'Continuar', onPress: () => { onSubmit(data) } },
-        ]);
+    const modalConfirmacion = (data) => {
+        setIsModalVisible(true);
+        setModalData(data);
+    };
 
-    const onSubmit = (data) => {
-        console.log('Data:', data);
-        navigation.goBack();
+    const [modalData, setModalData] = useState({});
+
+    const onSubmit = async (data) => {
+        setIsProcessing(true);
+        setSuccessMessage('');
+
+        const getAccountNumber = (description, accounts) => {
+            const account = accounts.find(a => a.descripcion === description);
+            return account ? account.cuenta : '';
+        };
+
+        const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
+        
+        const commonData = {
+            empresa_id: clientInfo.empresa_id,
+            sucursal_id: clientInfo.sucursal_id,
+            cuenta: clientInfo.cuenta,
+            fecha: format(new Date(), 'dd-MM-yyyy'),
+            monto: parseFloat(data.amount),
+            moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
+            modo_pago: selectedPaymentMethod[0].toUpperCase(),
+            cta_deposito: selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
+            observaciones: data.observations || '',
+            cobrador_id: cobrador_id,
+        };
+
+        try {
+            const response = await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, {
+                ...commonData,
+                notas_pendientes: clientInfo.notas_pendientes,
+            });
+
+            // Agregar las notas cobradas al store de Zustand
+            response.data.notas_cobradas.forEach(nota => addNotaCobrada(nota));
+
+            setIsProcessing(false);
+            setSuccessMessage('El pago ha sido registrado correctamente');
+            setTimeout(() => {
+                setSuccessMessage('');
+                setIsModalVisible(false);
+                navigation.goBack();
+            }, 2000);
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            setIsProcessing(false);
+            setSuccessMessage('');
+            Alert.alert('Error', 'Ocurrió un error al registrar el pago');
+        }
     };
 
     return (
@@ -93,105 +156,136 @@ const AutomaticPayScreen = ({ route }) => {
                                 <Icon name="back" size={30} color="black" />
                             </TouchableOpacity>
                             <View style={styles.aviContainer}>
-                                <Text style={styles.avi}>Pago de Nota</Text>
+                                <StyledText boldText style={styles.clientName}>{clientInfo.nombre}</StyledText>
                             </View>
                         </View>
                     </Cascading>
-                    <DropdownSelector
-                        title="Deposito"
-                        options={['efectivo', 'banco', 'cheque']}
-                        selectedOption={selectedPaymentMethod}
-                        onOptionChange={handlePaymentMethodChange}
-                    />
-                    <View style={{ marginTop:20 }}>
-                    <DropdownSelector
-                        title="Criterio de Cancelación"
-                        options={criteriaOptions}
-                        selectedOption={selectedCriteria}
-                        onOptionChange={setSelectedCriteria}
-                        style={styles.tertiaryDropdown}
-                    />
-                    </View>
+                    <Cascading delay={200} animationKey={animationKey}>
+                        <DropdownSelector
+                            title="Deposito"
+                            options={['efectivo', 'banco'].map(capitalizeFirstLetter)}
+                            selectedOption={selectedPaymentMethod}
+                            onOptionChange={handlePaymentMethodChange}
+                        />
+                    </Cascading>
                 </View>
             </View>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : null}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <View style={styles.formContainer}>
-                        <Text style={styles.saldoText}>Saldo pendiente: {note.saldo_pendiente} Bs</Text>
-                        <InputWithDropdown
-                            control={control}
-                            name="amount"
-                            title="Importe pagado"
-                            type="numeric"
-                            rules={{
-                                required: "Este campo es requerido",
-                                validate: value => parseFloat(value) <= note.saldo_pendiente || "El monto excede el saldo pendiente",
-                                pattern: {
-                                    value: /^[0-9]+([.][0-9]{0,2})?$/,
-                                    message: "Ingrese solo números",
-                                },
-                            }}
-                            errors={errors}
-                            selectedCurrency={selectedCurrency}
-                            handleCurrencyChange={handleCurrencyChange}
-                        />
-                        {selectedPaymentMethod === 'efectivo' &&
-                            <Dropdown
-                                title="Cta/Caja Banco"
-                                options={cash_accounts}
-                                selectedOption={selectedCash}
-                                onOptionChange={setSelectedCash}
-                            />}
-                        {selectedPaymentMethod === 'banco' &&
-                            <Dropdown
-                                title="Cta/Caja Banco"
-                                options={banks}
-                                selectedOption={selectedBank}
-                                onOptionChange={setSelectedBank}
-                            />}
-                        {selectedPaymentMethod === 'cheque' &&
-                            <DateInputField
+                        <Cascading delay={300} animationKey={animationKey}>
+                            <View style={styles.noteDetails}>
+                                <View style={styles.noteDetailRow}>
+                                    <StyledText regularText style={styles.noteDetailLabel}>Saldo Pendiente:</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{clientInfo.notas_pendientes.reduce((total, nota) => total + parseFloat(nota.saldo_pendiente), 0)} Bs</StyledText>
+                                </View>
+                            </View>
+                        </Cascading>
+                        <Cascading delay={400} animationKey={animationKey}>
+                            <InputWithDropdown
                                 control={control}
-                                name="checkBankDate"
-                                title="Fecha Cheque"
-                                callThrough={setSelectedDate}
-                                isEditable={true}
-                            />}
-                        {selectedPaymentMethod === 'cheque' &&
-                            <InputField
+                                name="amount"
+                                title="Importe pagado"
+                                type="numeric"
+                                rules={{
+                                    required: "Este campo es requerido",
+                                    pattern: {
+                                        value: /^[0-9]+([.][0-9]{0,2})?$/,
+                                        message: "Ingrese solo números",
+                                    },
+                                }}
+                                errors={errors}
+                                selectedCurrency={selectedCurrency}
+                                handleCurrencyChange={handleCurrencyChange}
+                            />
+                        </Cascading>
+                        {selectedPaymentMethod.toLowerCase() === 'efectivo' &&
+                            <Cascading delay={480} animationKey={animationKey}>
+                                <Dropdown
+                                    title="Cta/Caja Banco"
+                                    options={cashAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
+                                    selectedOption={selectedCash}
+                                    onOptionChange={setSelectedCash}
+                                />
+                            </Cascading>}
+                        {selectedPaymentMethod.toLowerCase() === 'banco' &&
+                            <Cascading delay={480} animationKey={animationKey}>
+                                <Dropdown
+                                    title="Cta/Caja Banco"
+                                    options={bankAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
+                                    selectedOption={selectedBank}
+                                    onOptionChange={setSelectedBank}
+                                />
+                            </Cascading>}
+                        <Cascading delay={560} animationKey={animationKey}>
+                            <ObservationsInputField
                                 control={control}
-                                name="reference"
-                                title="Referencia"
-                                type="default"
-                            />}
-                        <ObservationsInputField
-                            control={control}
-                            name="observations"
-                            title="Observaciones"
-                            rules={{}}
-                            errors={errors}
-                        />
+                                name="observations"
+                                title="Observaciones"
+                                rules={{}}
+                                errors={errors}
+                            />
+                        </Cascading>
+                        <Cascading delay={700} animationKey={animationKey}>
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={handleSubmit(modalConfirmacion)}
+                                >
+                                    <StyledText buttonText>Registrar Pago</StyledText>
+                                </TouchableOpacity>
+                            </View>
+                        </Cascading>
                     </View>
                 </ScrollView>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={handleSubmit(modalConfirmacion)}
-                    >
-                        <Text style={styles.buttonText}>Registrar Pago</Text>
-                    </TouchableOpacity>
-                </View>
             </KeyboardAvoidingView>
+            <Modal isVisible={isModalVisible} backdropColor="#9DBBE2" backdropOpacity={0.4}>
+                <View style={[styles.modalContent, styles.modalShadow]}>
+                    {isProcessing ? (
+                        <>
+                            <ActivityIndicator size="large" color={theme.colors.black} />
+                            <StyledText style={styles.modalText}>Registrando pago...</StyledText>
+                        </>
+                    ) : (
+                        successMessage ? (
+                            <>
+                                <Icon name="checkcircle" size={50} color="green" />
+                                <StyledText regularBlackText style={styles.modalText}>{successMessage}</StyledText>
+                            </>
+                        ) : (
+                            <>
+                                <StyledText regularBlackText style={styles.modalText}>¿Está seguro de realizar este cobro?</StyledText>
+                                <StyledText regularText style={styles.modalDetailText}>Monto: {modalData.amount} {selectedCurrency}</StyledText>
+                                <StyledText regularText style={styles.modalDetailText}>Método de pago: {selectedPaymentMethod}</StyledText>
+                                <View style={styles.modalButtonContainer}>
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, { backgroundColor: 'red' }]}
+                                        onPress={() => setIsModalVisible(false)}
+                                    >
+                                        <StyledText style={styles.modalButtonText}>Cancelar</StyledText>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, { backgroundColor: 'green' }]}
+                                        onPress={handleSubmit(onSubmit)}
+                                    >
+                                        <StyledText style={styles.modalButtonText}>Confirmar</StyledText>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )
+                    )}
+                </View>
+            </Modal>
         </SafeAreaView>
-    )
+    );
 };
 
 const styles = StyleSheet.create({
     cover: {
-        backgroundColor: theme.colors.primary,
         zIndex: 1,
     },
     up: {
@@ -225,8 +319,8 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    avi: {
-        marginRight: 40,
+    clientName: {
+        textAlign: 'center',
     },
     formContainer: {
         flex: 1,
@@ -234,11 +328,22 @@ const styles = StyleSheet.create({
         marginVertical: 20,
         justifyContent: "center",
     },
-    saldoText: {
-        fontSize: 18,
-        color: theme.colors.black,
+    noteDetails: {
         marginBottom: 20,
-        textAlign: 'center',
+        paddingHorizontal: 20,
+        backgroundColor: 'white',
+        borderRadius: 10,
+    },
+    noteDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 5,
+    },
+    noteDetailLabel: {
+        color: "#9A9A9A",
+    },
+    noteDetailValue: {
+        color: "#9A9A9A",
     },
     buttonContainer: {
         paddingHorizontal: 20,
@@ -247,22 +352,50 @@ const styles = StyleSheet.create({
     button: {
         justifyContent: "center",
         alignItems: "center",
-        elevation: 5,
         paddingVertical: 12,
         backgroundColor: theme.colors.tertiary,
         borderRadius: 22,
         width: '100%',
     },
-    buttonText: {
-        color: theme.colors.primary,
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-    tertiaryDropdown: {
-        backgroundColor: theme.colors.tertiary,
+    modalContent: {
+        backgroundColor: theme.colors.primary,
+        padding: 20,
         borderRadius: 10,
-        marginTop: 10,
-        padding: 5,
+        alignItems: 'center',
+    },
+    modalText: {
+        marginVertical: 10,
+    },
+    modalDetailText: {
+        marginVertical: 5,
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    modalButton: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        marginVertical: 5,
+        marginHorizontal: 5,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontSize: 16,
+        textAlign: 'center',
+    },
+    modalShadow: {
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 0.75,
+        shadowRadius: 10,
+        elevation: 90,
     },
 });
 

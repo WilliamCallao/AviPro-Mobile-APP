@@ -77,6 +77,10 @@ const ClientDebit = ({ clientInfo }) => {
     console.log('Notas Cobradas Store:', notasCobradas);
   }, [notasCobradas]);
 
+  const handleAutomaticPress = () => {
+    navigation.navigate("AutomaticPayScreen", { clientInfo });
+  };
+
   return (
     <View style={clientDebitStyles.container}>
       <StatusBar style="dark" backgroundColor={theme.colors.secondary} />
@@ -90,7 +94,7 @@ const ClientDebit = ({ clientInfo }) => {
       <View style={clientDebitStyles.spaceButtons}>
         <SimpleButton
           text="Automático"
-          onPress={() => navigation.navigate("SelectPayModeScreen", { clientInfo })}
+          onPress={handleAutomaticPress}
           width={screenWidth * 0.435}
         />
         <SimpleButton
