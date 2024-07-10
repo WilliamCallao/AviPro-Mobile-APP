@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from "react";
-import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions, ActivityIndicator } from 'react-native';
+import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { theme } from '../../assets/Theme';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import ClientDebit from './ClientDebit';
 import NoteItem from "./NoteItem";
-import PaidNoteItem from "./PaidNoteItem"; // Importar el nuevo componente
+import PaidNoteItem from "./PaidNoteItem";
 import DropdownSelector from "../../components/DropdownSelector";
 import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
@@ -30,8 +30,6 @@ const ClientPaymentScreen = ({ route }) => {
     try {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/cuenta/${cuenta}`);
-      // console.log("---------client-payment-screen--------");
-      // console.log(JSON.stringify(response.data, null, 2));
       setClientData(response.data);
     } catch (error) {
       console.error("Error fetching data: ", error);
@@ -51,6 +49,19 @@ const ClientPaymentScreen = ({ route }) => {
     setSelectedOption(option);
   };
 
+  const handleEditNote = (note) => {
+    // Implementa la lógica de edición aquí
+  };
+
+  const handleDeleteNote = async (note) => {
+    // Eliminar la nota del estado después de que se haya confirmado la eliminación en PaidNoteItem
+    setClientData(prevData => ({
+      ...prevData,
+      notas_cobradas: prevData.notas_cobradas.filter(n => n.fecha_registro !== note.fecha_registro)
+    }));
+    fetchData();
+  };
+
   const renderItem = ({ item, index }) => (
     <Cascading
       delay={index > 6 ? 0 : 400 + 80 * index}
@@ -59,7 +70,7 @@ const ClientPaymentScreen = ({ route }) => {
       {selectedOption === 'Pendientes' ? (
         <NoteItem note={item} onSelect={() => { }} />
       ) : (
-        <PaidNoteItem note={item} />
+        <PaidNoteItem note={item} onEdit={handleEditNote} onDelete={handleDeleteNote} />
       )}
     </Cascading>
   );
