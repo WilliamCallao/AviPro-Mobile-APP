@@ -22,18 +22,22 @@ const screenWidth = Dimensions.get("window").width;
 
 const AutomaticPayScreen = ({ route }) => {
     const { clientInfo } = route.params;
+    console.log(JSON.stringify(clientInfo, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
     const [cashAccounts, setCashAccounts] = useState([]);
     const [bankAccounts, setBankAccounts] = useState([]);
-    const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
+    const [selectedCurrency, setSelectedCurrency] = useState('BS');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
+    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'dd-MM-yyyy HH:mm:ss'));
     const [isProcessing, setIsProcessing] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [paidNotes, setPaidNotes] = useState([]);
+    const [selectedCriteria, setSelectedCriteria] = useState('PEPS');
     const addNotaCobrada = useNotasCobradasStore((state) => state.addNotaCobrada);
 
     useEffect(() => {
@@ -104,29 +108,59 @@ const AutomaticPayScreen = ({ route }) => {
         };
 
         const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
-        
-        const commonData = {
-            empresa_id: clientInfo.empresa_id,
-            sucursal_id: clientInfo.sucursal_id,
-            cuenta: clientInfo.cuenta,
-            fecha: format(new Date(), 'dd-MM-yyyy'),
-            monto: parseFloat(data.amount),
-            moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
-            modo_pago: selectedPaymentMethod[0].toUpperCase(),
-            cta_deposito: selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
-            observaciones: data.observations || '',
-            cobrador_id: cobrador_id,
-        };
+
+        let sortedNotes = [...clientInfo.notas_pendientes];
+
+        if (selectedCriteria === 'PEPS') {
+            sortedNotes.sort((a, b) => new Date(a.fecha_venta) - new Date(b.fecha_venta));
+        } else if (selectedCriteria === 'UEPS') {
+            sortedNotes.sort((a, b) => new Date(b.fecha_venta) - new Date(a.fecha_venta));
+        } else if (selectedCriteria === 'Mayor importe a menor') {
+            sortedNotes.sort((a, b) => parseFloat(b.importe_nota) - parseFloat(a.importe_nota));
+        } else if (selectedCriteria === 'Menor importe a mayor') {
+            sortedNotes.sort((a, b) => parseFloat(a.importe_nota) - parseFloat(b.importe_nota));
+        }
+
+        const amountToPay = parseFloat(data.amount);
+        let remainingAmount = amountToPay;
+        const notesToPay = [];
+
+        for (let note of sortedNotes) {
+            if (remainingAmount <= 0) break;
+
+            const noteSaldoPendiente = parseFloat(note.saldo_pendiente);
+            if (remainingAmount >= noteSaldoPendiente) {
+                notesToPay.push({ ...note, monto_pagado: noteSaldoPendiente });
+                remainingAmount -= noteSaldoPendiente;
+            } else {
+                notesToPay.push({ ...note, monto_pagado: remainingAmount });
+                remainingAmount = 0;
+            }
+        }
 
         try {
-            const response = await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, {
-                ...commonData,
-                notas_pendientes: clientInfo.notas_pendientes,
-            });
+            for (let note of notesToPay) {
+                const paymentData = {
+                    empresa_id: note.empresa_id,
+                    sucursal_id: note.sucursal_id,
+                    cuenta: note.cuenta,
+                    fecha: format(new Date(), 'dd-MM-yyyy'),
+                    pago_a_nota: note.nro_nota,
+                    monto: note.monto_pagado,
+                    moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
+                    modo_pago: selectedPaymentMethod[0].toUpperCase(),
+                    cta_deposito: selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
+                    observaciones: data.observations || '',
+                    nro_factura: note.nro_factura,
+                    cobrador_id: cobrador_id,
+                    fecha_registro: format(new Date(), 'dd-MM-yyyy HH:mm:ss')
+                };
 
-            // Agregar las notas cobradas al store de Zustand
-            response.data.notas_cobradas.forEach(nota => addNotaCobrada(nota));
+                await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, paymentData);
+                addNotaCobrada(paymentData);
+            }
 
+            setPaidNotes(notesToPay);
             setIsProcessing(false);
             setSuccessMessage('El pago ha sido registrado correctamente');
             setTimeout(() => {
@@ -135,7 +169,7 @@ const AutomaticPayScreen = ({ route }) => {
                 navigation.goBack();
             }, 2000);
         } catch (error) {
-            console.error('Error processing payment:', error);
+            console.error('Error updating note:', error);
             setIsProcessing(false);
             setSuccessMessage('');
             Alert.alert('Error', 'Ocurrió un error al registrar el pago');
@@ -168,6 +202,14 @@ const AutomaticPayScreen = ({ route }) => {
                             onOptionChange={handlePaymentMethodChange}
                         />
                     </Cascading>
+                    <Cascading delay={300} animationKey={animationKey}>
+                        <DropdownSelector
+                            title="Criterio de Cancelación"
+                            options={['PEPS', 'UEPS', 'Mayor importe a menor', 'Menor importe a mayor']}
+                            selectedOption={selectedCriteria}
+                            onOptionChange={setSelectedCriteria}
+                        />
+                    </Cascading>
                 </View>
             </View>
             <KeyboardAvoidingView
@@ -177,15 +219,15 @@ const AutomaticPayScreen = ({ route }) => {
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <View style={styles.formContainer}>
-                        <Cascading delay={300} animationKey={animationKey}>
+                        <Cascading delay={400} animationKey={animationKey}>
                             <View style={styles.noteDetails}>
                                 <View style={styles.noteDetailRow}>
                                     <StyledText regularText style={styles.noteDetailLabel}>Saldo Pendiente:</StyledText>
-                                    <StyledText regularText style={styles.noteDetailValue}>{clientInfo.notas_pendientes.reduce((total, nota) => total + parseFloat(nota.saldo_pendiente), 0)} Bs</StyledText>
+                                    <StyledText regularText style={styles.noteDetailValue}>{clientInfo.notas_pendientes.reduce((sum, note) => sum + parseFloat(note.saldo_pendiente), 0)} Bs</StyledText>
                                 </View>
                             </View>
                         </Cascading>
-                        <Cascading delay={400} animationKey={animationKey}>
+                        <Cascading delay={500} animationKey={animationKey}>
                             <InputWithDropdown
                                 control={control}
                                 name="amount"
@@ -193,6 +235,7 @@ const AutomaticPayScreen = ({ route }) => {
                                 type="numeric"
                                 rules={{
                                     required: "Este campo es requerido",
+                                    validate: value => parseFloat(value) <= clientInfo.notas_pendientes.reduce((sum, note) => sum + parseFloat(note.saldo_pendiente), 0) || "El monto excede el saldo pendiente",
                                     pattern: {
                                         value: /^[0-9]+([.][0-9]{0,2})?$/,
                                         message: "Ingrese solo números",
@@ -204,7 +247,7 @@ const AutomaticPayScreen = ({ route }) => {
                             />
                         </Cascading>
                         {selectedPaymentMethod.toLowerCase() === 'efectivo' &&
-                            <Cascading delay={480} animationKey={animationKey}>
+                            <Cascading delay={580} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
                                     options={cashAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
@@ -213,7 +256,7 @@ const AutomaticPayScreen = ({ route }) => {
                                 />
                             </Cascading>}
                         {selectedPaymentMethod.toLowerCase() === 'banco' &&
-                            <Cascading delay={480} animationKey={animationKey}>
+                            <Cascading delay={580} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
                                     options={bankAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
@@ -221,7 +264,7 @@ const AutomaticPayScreen = ({ route }) => {
                                     onOptionChange={setSelectedBank}
                                 />
                             </Cascading>}
-                        <Cascading delay={560} animationKey={animationKey}>
+                        <Cascading delay={660} animationKey={animationKey}>
                             <ObservationsInputField
                                 control={control}
                                 name="observations"
@@ -230,7 +273,7 @@ const AutomaticPayScreen = ({ route }) => {
                                 errors={errors}
                             />
                         </Cascading>
-                        <Cascading delay={700} animationKey={animationKey}>
+                        <Cascading delay={800} animationKey={animationKey}>
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity
                                     style={styles.button}
@@ -259,8 +302,9 @@ const AutomaticPayScreen = ({ route }) => {
                         ) : (
                             <>
                                 <StyledText regularBlackText style={styles.modalText}>¿Está seguro de realizar este cobro?</StyledText>
-                                <StyledText regularText style={styles.modalDetailText}>Monto: {modalData.amount} {selectedCurrency}</StyledText>
-                                <StyledText regularText style={styles.modalDetailText}>Método de pago: {selectedPaymentMethod}</StyledText>
+                                {paidNotes.map((note, index) => (
+                                    <StyledText key={index} regularText style={styles.modalDetailText}>Nota {note.nro_nota}: {note.monto_pagado} Bs</StyledText>
+                                ))}
                                 <View style={styles.modalButtonContainer}>
                                     <TouchableOpacity
                                         style={[styles.modalButton, { backgroundColor: 'red' }]}
