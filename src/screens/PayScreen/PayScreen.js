@@ -317,10 +317,10 @@ const styles = StyleSheet.create({
     },
     up: {
         backgroundColor: theme.colors.secondary,
-        borderBottomLeftRadius: 22,
-        borderBottomRightRadius: 22,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25,
         elevation: 7,
-        paddingBottom: 20,
+        paddingBottom: 10,
     },
     container: {
         flex: 1,
@@ -329,15 +329,16 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: "row",
-        paddingHorizontal: 20,
-        paddingVertical: 20,
+        paddingHorizontal: 10,
+        paddingTop: 20,
+        paddingBottom: 10,
         alignItems: "center",
     },
     back: {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: theme.colors.skyBlue,
-        borderRadius: 20,
+        borderRadius: 25,
         width: 60,
         height: 60,
     },
@@ -345,6 +346,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        height: 60,
+        marginLeft:10,
+        borderRadius: 25,
+        backgroundColor: theme.colors.skyBlue,
     },
     clientName: {
         textAlign: 'center',
@@ -373,7 +378,7 @@ const styles = StyleSheet.create({
         color: "#9A9A9A",
     },
     buttonContainer: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
         marginBottom: 20,
     },
     button: {
@@ -381,13 +386,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingVertical: 12,
         backgroundColor: theme.colors.tertiary,
-        borderRadius: 22,
+        borderRadius: 20,
         width: '100%',
     },
     modalContent: {
         backgroundColor: theme.colors.primary,
         padding: 20,
-        borderRadius: 10,
+        borderRadius: 25,
         alignItems: 'center',
     },
     modalText: {

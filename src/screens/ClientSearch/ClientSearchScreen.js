@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 20,
+    borderRadius: 25,
     width: 60,
     height: 60,
   },

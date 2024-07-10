@@ -210,12 +210,14 @@ const AutomaticPayScreen = ({ route }) => {
                         />
                     </Cascading>
                     <Cascading delay={300} animationKey={animationKey}>
-                        <DropdownSelector
-                            title="Criterio de Cancelación"
-                            options={['PEPS', 'UEPS', 'MayorMenor', 'MenorMayor']}
-                            selectedOption={selectedCriteria}
-                            onOptionChange={handleCriteriaChange}
-                        />
+                        <View style={{marginTop:10}}>
+                            <DropdownSelector
+                                title="Criterio de Cancelación"
+                                options={['PEPS', 'UEPS', 'MayorMenor', 'MenorMayor']}
+                                selectedOption={selectedCriteria}
+                                onOptionChange={handleCriteriaChange}
+                            />
+                        </View>
                     </Cascading>
                 </View>
             </View>
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 22,
         borderBottomRightRadius: 22,
         elevation: 7,
-        paddingBottom: 20,
+        paddingBottom: 10,
     },
     container: {
         flex: 1,
@@ -370,8 +372,9 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: "row",
-        paddingHorizontal: 20,
-        paddingVertical: 20,
+        paddingHorizontal: 10,
+        paddingTop: 20,
+        paddingBottom: 10,
         alignItems: "center",
     },
     back: {
@@ -386,6 +389,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        height: 60,
+        marginLeft:10,
+        borderRadius: 25,
+        backgroundColor: theme.colors.skyBlue,
     },
     clientName: {
         textAlign: 'center',
