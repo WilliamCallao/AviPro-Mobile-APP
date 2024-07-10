@@ -22,6 +22,8 @@ const screenWidth = Dimensions.get("window").width;
 
 const AutomaticPayScreen = ({ route }) => {
     const { clientInfo } = route.params;
+    // console.log("----------AUTOMATIC-PAY-SCREEN----------");
+    // console.log(JSON.stringify(clientInfo, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
@@ -94,6 +96,7 @@ const AutomaticPayScreen = ({ route }) => {
     });
 
     const modalConfirmacion = (data) => {
+        console.log("Datos del formulario:", data);
         const amount = parseFloat(data.amount);
         const sortedNotes = [...clientInfo.notas_pendientes];
 
@@ -105,10 +108,10 @@ const AutomaticPayScreen = ({ route }) => {
                 sortedNotes.sort((a, b) => new Date(b.fecha_venta) - new Date(a.fecha_venta));
                 break;
             case 'MayorMenor':
-                sortedNotes.sort((a, b) => parseFloat(b.importe_nota) - parseFloat(a.importe_nota));
+                sortedNotes.sort((a, b) => parseFloat(b.saldo_pendiente) - parseFloat(a.saldo_pendiente));
                 break;
             case 'MenorMayor':
-                sortedNotes.sort((a, b) => parseFloat(a.importe_nota) - parseFloat(b.importe_nota));
+                sortedNotes.sort((a, b) => parseFloat(a.saldo_pendiente) - parseFloat(b.saldo_pendiente));
                 break;
             default:
                 break;
@@ -121,12 +124,13 @@ const AutomaticPayScreen = ({ route }) => {
                 remainingAmount -= amountToPay;
                 return {
                     ...note,
-                    monto_pagado: amountToPay.toFixed(2)
+                    monto_pagado: amountToPay
                 };
             }
             return null;
         }).filter(note => note !== null);
 
+        console.log("Notas a pagar:", notesToPay);
         setPaidNotes(notesToPay);
         setIsModalVisible(true);
         setModalData(data);
@@ -161,6 +165,8 @@ const AutomaticPayScreen = ({ route }) => {
                     nro_factura: note.nro_factura,
                     cobrador_id: cobrador_id,
                 };
+
+                console.log("Datos de la nota a pagar:", commonData);
 
                 await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
 
@@ -316,7 +322,7 @@ const AutomaticPayScreen = ({ route }) => {
                                             <StyledText boldText>{note.nro_nota}</StyledText>
                                             <View style={styles.noteRow}>
                                                 <StyledText regularText>Monto Pagado: </StyledText>
-                                                <StyledText money>{note.monto_pagado} Bs</StyledText>
+                                                <StyledText money>{parseFloat(note.monto_pagado).toFixed(2)} Bs</StyledText>
                                             </View>
                                             <View style={styles.noteRow}>
                                                 <StyledText regularText style={{marginBottom:15}}>
