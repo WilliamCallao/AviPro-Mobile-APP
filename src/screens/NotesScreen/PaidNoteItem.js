@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { theme } from '../../assets/Theme';
 import StyledText from '../../utils/StyledText';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -10,9 +10,14 @@ import { BASE_URL } from '../../../config';
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const PaidNoteItem = ({ note, onEdit, onDelete }) => {
+  // console.log("----Paid-Note-Item----");
+  // console.log(JSON.stringify(note, null, 2));
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [monto, setMonto] = useState(note.monto.toString());
+  const [observaciones, setObservaciones] = useState(note.observaciones || '');
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -31,7 +36,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
   };
 
   const handleDelete = async () => {
-    if (isProcessing) return; // Asegurarse de que no se procese dos veces
+    if (isProcessing) return;
 
     setIsProcessing(true);
     try {
@@ -61,6 +66,37 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
     }
   };
 
+  const handleEdit = async () => {
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    try {
+      const response = await axios.put(`${BASE_URL}/api/mobile/notas/notas-cobradas/edit`, {
+        empresa_id: note.empresa_id,
+        sucursal_id: note.sucursal_id,
+        cuenta: note.cuenta,
+        pago_a_nota: note.pago_a_nota,
+        fecha_registro: note.fecha_registro,
+        monto,
+        observaciones
+      });
+      if (response.status === 200) {
+        setSuccessMessage('Nota cobrada editada correctamente');
+        setIsProcessing(false);
+        await wait(1000);
+        setIsEditModalVisible(false);
+        onEdit({ ...note, monto, observaciones });
+      } else {
+        throw new Error('Failed to edit the note');
+      }
+    } catch (error) {
+      setIsProcessing(false);
+      setSuccessMessage('');
+      Alert.alert('Error', 'Ocurrió un error al editar la nota cobrada');
+      console.error('Error editing paid note:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -84,7 +120,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
         <StyledText regularText>{note.observaciones || 'N/A'}</StyledText>
       </View>
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button} onPress={() => onEdit(note)}>
+        <TouchableOpacity style={styles.button} onPress={() => setIsEditModalVisible(true)}>
           <Icon name="edit" size={20} color={theme.colors.primary} />
           <StyledText regularText style={styles.buttonText}>Editar</StyledText>
         </TouchableOpacity>
@@ -120,6 +156,59 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: 'green' }]}
                     onPress={handleDelete}
+                  >
+                    <StyledText style={styles.modalButtonText}>Confirmar</StyledText>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )
+          )}
+        </View>
+      </Modal>
+
+      <Modal isVisible={isEditModalVisible} backdropColor="#9DBBE2" backdropOpacity={0.4}>
+        <View style={[styles.modalContent, styles.modalShadow]}>
+          {isProcessing ? (
+            <>
+              <ActivityIndicator size="large" color={theme.colors.black} />
+              <StyledText regularText style={styles.modalText}>Editando nota...</StyledText>
+            </>
+          ) : (
+            successMessage ? (
+              <>
+                <Icon name="checkcircle" size={50} color="green" />
+                <StyledText regularBlackText style={styles.modalText}>{successMessage}</StyledText>
+              </>
+            ) : (
+              <>
+                <StyledText regularBlackText style={styles.modalText}>Editar Nota Cobrada</StyledText>
+                <View style={styles.inputContainer}>
+                  <StyledText regularText style={styles.inputLabel}>Monto:</StyledText>
+                  <TextInput
+                    style={styles.input}
+                    value={monto}
+                    onChangeText={setMonto}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.inputContainer}>
+                  <StyledText regularText style={styles.inputLabel}>Observaciones:</StyledText>
+                  <TextInput
+                    style={styles.input}
+                    value={observaciones}
+                    onChangeText={setObservaciones}
+                  />
+                </View>
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: 'red' }]}
+                    onPress={() => setIsEditModalVisible(false)}
+                  >
+                    <StyledText style={styles.modalButtonText}>Cancelar</StyledText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: 'green' }]}
+                    onPress={handleEdit}
                   >
                     <StyledText style={styles.modalButtonText}>Confirmar</StyledText>
                   </TouchableOpacity>
@@ -208,6 +297,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.75,
     shadowRadius: 10,
     elevation: 90,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  inputLabel: {
+    flex: 1,
+    marginRight: 10,
+  },
+  input: {
+    flex: 2,
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: theme.colors.secondaryText,
+    color: theme.colors.black,
   },
 });
 

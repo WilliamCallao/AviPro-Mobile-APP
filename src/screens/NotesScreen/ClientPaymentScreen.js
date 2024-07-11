@@ -30,8 +30,8 @@ const ClientPaymentScreen = ({ route }) => {
     try {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/cuenta/${cuenta}`);
-      console.log("----Client-Payment-Screem----");
-      console.log(JSON.stringify(response.data, null, 2));
+      // console.log("----Client-Payment-Screem----");
+      // console.log(JSON.stringify(response.data, null, 2));
       setClientData(response.data);
     } catch (error) {
       console.error("Error fetching data: ", error);
@@ -52,7 +52,7 @@ const ClientPaymentScreen = ({ route }) => {
   };
 
   const handleEditNote = (note) => {
-    // Implementa la lógica de edición aquí
+    fetchData();
   };
 
   const handleDeleteNote = async (note) => {
