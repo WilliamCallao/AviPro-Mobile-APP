@@ -96,7 +96,6 @@ const AutomaticPayScreen = ({ route }) => {
     });
 
     const modalConfirmacion = (data) => {
-        console.log("Datos del formulario:", data);
         const amount = parseFloat(data.amount);
         const sortedNotes = [...clientInfo.notas_pendientes];
 
@@ -129,8 +128,6 @@ const AutomaticPayScreen = ({ route }) => {
             }
             return null;
         }).filter(note => note !== null);
-
-        console.log("Notas a pagar:", notesToPay);
         setPaidNotes(notesToPay);
         setIsModalVisible(true);
         setModalData(data);
@@ -165,9 +162,6 @@ const AutomaticPayScreen = ({ route }) => {
                     nro_factura: note.nro_factura,
                     cobrador_id: cobrador_id,
                 };
-
-                console.log("Datos de la nota a pagar:", commonData);
-
                 await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
 
                 // Agregar la nota cobrada al store de Zustand
@@ -305,7 +299,7 @@ const AutomaticPayScreen = ({ route }) => {
                     {isProcessing ? (
                         <>
                             <ActivityIndicator size="large" color={theme.colors.black} />
-                            <StyledText style={styles.modalText}>Registrando pago...</StyledText>
+                            <StyledText regularText style={styles.modalText}>Registrando pago...</StyledText>
                         </>
                     ) : (
                         successMessage ? (

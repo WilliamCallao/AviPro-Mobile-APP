@@ -30,6 +30,8 @@ const ClientPaymentScreen = ({ route }) => {
     try {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/api/mobile/clientes/cuenta/${cuenta}`);
+      console.log("----Client-Payment-Screem----");
+      console.log(JSON.stringify(response.data, null, 2));
       setClientData(response.data);
     } catch (error) {
       console.error("Error fetching data: ", error);
@@ -79,6 +81,30 @@ const ClientPaymentScreen = ({ route }) => {
     return item.nro_nota ? item.nro_nota.toString() : index.toString();
   };
 
+  const sortPendingNotes = (notes) => {
+    return notes.sort((a, b) => new Date(a.fecha_vence) - new Date(b.fecha_vence));
+  };
+
+  const sortPaidNotes = (notes) => {
+    return notes.sort((a, b) => new Date(b.fecha_registro) - new Date(a.fecha_registro));
+  };
+
+  const getNotes = () => {
+    if (selectedOption === 'Pendientes') {
+      return clientData && clientData.notas_pendientes ? sortPendingNotes(clientData.notas_pendientes) : [];
+    } else {
+      return clientData && clientData.notas_cobradas ? sortPaidNotes(clientData.notas_cobradas) : [];
+    }
+  };
+
+  const renderEmptyMessage = () => {
+    if (selectedOption === 'Pendientes') {
+      return <StyledText regularText style={styles.emptyMessage}>No hay notas pendientes</StyledText>;
+    } else {
+      return <StyledText regularText style={styles.emptyMessage}>No hay notas cobradas</StyledText>;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerWithComponents}>
@@ -111,9 +137,10 @@ const ClientPaymentScreen = ({ route }) => {
           <ActivityIndicator size="large" color={theme.colors.secondary} />
         ) : (
           <FlatList
-            data={selectedOption === 'Pendientes' ? clientData.notas_pendientes : clientData.notas_cobradas}
+            data={getNotes()}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
+            ListEmptyComponent={renderEmptyMessage}
             ListHeaderComponent={<View style={{ height: 10 }} />}
             ListFooterComponent={<View style={{ height: 10 }} />}
             showsVerticalScrollIndicator={false}
@@ -169,6 +196,11 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     justifyContent: 'center',
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    marginVertical: 20,
+    color: theme.colors.secondaryText,
   },
 });
 

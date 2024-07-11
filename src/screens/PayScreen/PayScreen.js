@@ -22,8 +22,8 @@ const screenWidth = Dimensions.get("window").width;
 
 const PayScreen = ({ route }) => {
     const { note } = route.params;
-    console.log("---------pay-screen--------");
-    console.log(JSON.stringify(note, null, 2));
+    // console.log("---------pay-screen--------");
+    // console.log(JSON.stringify(note, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
@@ -275,7 +275,7 @@ const PayScreen = ({ route }) => {
                     {isProcessing ? (
                         <>
                             <ActivityIndicator size="large" color={theme.colors.black} />
-                            <StyledText style={styles.modalText}>Registrando pago...</StyledText>
+                            <StyledText regularText style={styles.modalText}>Registrando pago...</StyledText>
                         </>
                     ) : (
                         successMessage ? (
