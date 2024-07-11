@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import Modal from 'react-native-modal';
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
+import useNotasCobradasStore from '../../stores/notasCobradasStore';
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -18,6 +19,8 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [monto, setMonto] = useState(note.monto.toString());
   const [observaciones, setObservaciones] = useState(note.observaciones || '');
+
+  const { removeNotaCobrada, editNotaCobrada } = useNotasCobradasStore();
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -55,6 +58,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
         await wait(1000);
         setIsModalVisible(false);
         onDelete(note);
+        removeNotaCobrada(note.pago_a_nota);
       } else {
         throw new Error('Failed to delete the note');
       }
@@ -86,6 +90,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
         await wait(1000);
         setIsEditModalVisible(false);
         onEdit({ ...note, monto, observaciones });
+        editNotaCobrada({ ...note, monto, observaciones });
       } else {
         throw new Error('Failed to edit the note');
       }
@@ -265,7 +270,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: theme.colors.primary,
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 25,
     alignItems: 'center',
   },
   modalText: {
@@ -280,7 +285,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 10,
     marginVertical: 5,
     marginHorizontal: 5,
   },
