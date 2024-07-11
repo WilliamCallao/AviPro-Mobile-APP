@@ -116,11 +116,11 @@ const styles = StyleSheet.create({
   header: {
     zIndex: 1,
     paddingTop: 40,
-    paddingBottom: 18,
+    paddingBottom: 10,
     paddingVertical: 20,
     backgroundColor: theme.colors.secondary,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     elevation: 5,
   },
   listContainer: {
