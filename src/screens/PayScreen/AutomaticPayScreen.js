@@ -127,7 +127,8 @@ const AutomaticPayScreen = ({ route }) => {
                 };
             }
             return null;
-        }).filter(note => note !== null);
+        }).filter(note => note !== null && note.monto_pagado > 0);
+
         setPaidNotes(notesToPay);
         setIsModalVisible(true);
         setModalData(data);
