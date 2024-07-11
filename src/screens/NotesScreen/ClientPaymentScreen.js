@@ -91,9 +91,13 @@ const ClientPaymentScreen = ({ route }) => {
 
   const getNotes = () => {
     if (selectedOption === 'Pendientes') {
-      return clientData && clientData.notas_pendientes ? sortPendingNotes(clientData.notas_pendientes) : [];
+      return clientData && clientData.notas_pendientes 
+        ? sortPendingNotes(clientData.notas_pendientes.filter(note => parseFloat(note.saldo_pendiente) > 0))
+        : [];
     } else {
-      return clientData && clientData.notas_cobradas ? sortPaidNotes(clientData.notas_cobradas) : [];
+      return clientData && clientData.notas_cobradas 
+        ? sortPaidNotes(clientData.notas_cobradas.filter(note => parseFloat(note.monto) > 0))
+        : [];
     }
   };
 
