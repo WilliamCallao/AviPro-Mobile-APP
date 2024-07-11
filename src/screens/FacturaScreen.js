@@ -23,10 +23,6 @@ const SimpleScreen = () => {
   const notasCobradas = useNotasCobradasStore((state) => state.notasCobradas);
   const clearNotasCobradas = useNotasCobradasStore((state) => state.clearNotasCobradas);
 
-  useEffect(() => {
-    console.log('Notas Cobradas Store:', notasCobradas);
-  }, [notasCobradas]);
-
   useFocusEffect(
     useCallback(() => {
       setAnimationKey(Date.now());

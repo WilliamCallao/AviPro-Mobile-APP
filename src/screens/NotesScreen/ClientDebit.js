@@ -34,7 +34,7 @@ const ClientDebit = ({ clientInfo }) => {
         setClientName(capitalizeFirstLetter(cliente.nombre));
       } catch (error) {
         // console.error("Error fetching client name: ", error);
-        console.log("no hay notas cobradas");
+        // console.log("no hay notas cobradas");
       }
     };
 
@@ -72,10 +72,6 @@ const ClientDebit = ({ clientInfo }) => {
 
   const currentDate = new Date();
   const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
-
-  useEffect(() => {
-    console.log('Notas Cobradas Store:', notasCobradas);
-  }, [notasCobradas]);
 
   const handleAutomaticPress = () => {
     navigation.navigate("AutomaticPayScreen", { clientInfo });
