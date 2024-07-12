@@ -23,13 +23,10 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
   const { removeNotaCobrada, editNotaCobrada } = useNotasCobradasStore();
 
   const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    return formattedDate;
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+    return date.toLocaleDateString(undefined, options);
   };
 
   const getPaymentMode = (mode) => {
@@ -37,7 +34,6 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
   };
 
   const isPaidToday = note.fecha === serverDate;
-  console.log(`Note date: ${note.fecha}, Server date: ${serverDate}, isPaidToday: ${isPaidToday}`);
 
   const handleDelete = async () => {
     if (isProcessing) return;
