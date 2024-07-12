@@ -161,22 +161,10 @@ const AutomaticPayScreen = ({ route }) => {
                     observaciones: data.observations || '',
                     nro_factura: note.nro_factura,
                     cobrador_id: cobrador_id,
+                    nombre_cliente: clientInfo.nombre,
                     fecha_registro: new Date().toISOString().split('T')[0], // adding current date
                 };
                 await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
-
-                // Crear el registro en el historial de cobros
-                const historialData = {
-                    empresa_id: clientInfo.empresa_id,
-                    cobrador_id: cobrador_id,
-                    nombre_cliente: clientInfo.nombre,
-                    monto: note.monto_pagado,
-                    accion: 'Cobro de nota',
-                    cuenta: clientInfo.cuenta,
-                    observaciones: data.observations || '',
-                    pago_a_nota: note.nro_nota,
-                };
-                await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, historialData);
 
                 // Agregar la nota cobrada al store de Zustand
                 addNotaCobrada(commonData);

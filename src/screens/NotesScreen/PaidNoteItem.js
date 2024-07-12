@@ -11,8 +11,6 @@ import useNotasCobradasStore from '../../stores/notasCobradasStore';
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
-  // console.log("----Paid-Note-Item----");
-  // console.log(JSON.stringify(note, null, 2));
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -35,18 +33,31 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
 
   const isPaidToday = note.fecha === serverDate;
 
+  const fetchClientName = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${note.empresa_id}/cuenta/${note.cuenta}`);
+      return response.data.nombre_cliente;
+    } catch (error) {
+      console.error('Error fetching client name:', error);
+      throw new Error('Failed to fetch client name');
+    }
+  };
+
   const handleDelete = async () => {
     if (isProcessing) return;
 
     setIsProcessing(true);
     try {
+      const nombre_cliente = await fetchClientName();
       const response = await axios.delete(`${BASE_URL}/api/mobile/notas/notas-cobradas/delete`, {
         data: {
           empresa_id: note.empresa_id,
           sucursal_id: note.sucursal_id,
           cuenta: note.cuenta,
           pago_a_nota: note.pago_a_nota,
-          fecha_registro: note.fecha_registro
+          fecha_registro: note.fecha_registro,
+          nombre_cliente: "WILLIAM",
+          cobrador_id: note.cobrador_id // Ensure cobrador_id is included in the note object
         }
       });
       if (response.status === 200) {
@@ -72,6 +83,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
 
     setIsProcessing(true);
     try {
+      const nombre_cliente = await fetchClientName();
       const response = await axios.put(`${BASE_URL}/api/mobile/notas/notas-cobradas/edit`, {
         empresa_id: note.empresa_id,
         sucursal_id: note.sucursal_id,
@@ -79,7 +91,9 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
         pago_a_nota: note.pago_a_nota,
         fecha_registro: note.fecha_registro,
         monto,
-        observaciones
+        observaciones,
+        nombre_cliente,
+        cobrador_id: note.cobrador_id // Ensure cobrador_id is included in the note object
       });
       if (response.status === 200) {
         setSuccessMessage('Nota cobrada editada correctamente');
