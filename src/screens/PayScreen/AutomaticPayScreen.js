@@ -11,7 +11,6 @@ import InputWithDropdown from "./InputWithDropdown";
 import DropdownSelector from "../../components/DropdownSelector";
 import Dropdown from "./DropdownPay";
 import ObservationsInputField from "./ObservationsInputField";
-import { format } from "date-fns";
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -153,7 +152,7 @@ const AutomaticPayScreen = ({ route }) => {
                     empresa_id: clientInfo.empresa_id,
                     sucursal_id: clientInfo.sucursal_id,
                     cuenta: clientInfo.cuenta,
-                    fecha: format(new Date(), 'dd-MM-yyyy'),
+                    // fecha: format(new Date(), 'dd-MM-yyyy'),
                     pago_a_nota: note.nro_nota,
                     monto: note.monto_pagado,
                     moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
