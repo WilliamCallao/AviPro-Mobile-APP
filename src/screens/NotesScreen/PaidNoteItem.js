@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { theme } from '../../assets/Theme';
 import StyledText from '../../utils/StyledText';
@@ -10,7 +10,7 @@ import useNotasCobradasStore from '../../stores/notasCobradasStore';
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const PaidNoteItem = ({ note, onEdit, onDelete }) => {
+const PaidNoteItem = ({ note, onEdit, onDelete, serverDate }) => {
   // console.log("----Paid-Note-Item----");
   // console.log(JSON.stringify(note, null, 2));
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -24,19 +24,20 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const today = new Date();
     const formattedDate = date.toLocaleDateString("es-ES", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
     });
-    const isToday = date.toDateString() === today.toDateString();
-    return isToday ? `${formattedDate} (hoy)` : formattedDate;
+    return formattedDate;
   };
 
   const getPaymentMode = (mode) => {
     return mode === 'E' ? 'Efectivo' : 'Banco';
   };
+
+  const isPaidToday = note.fecha === serverDate;
+  console.log(`Note date: ${note.fecha}, Server date: ${serverDate}, isPaidToday: ${isPaidToday}`);
 
   const handleDelete = async () => {
     if (isProcessing) return;
@@ -124,16 +125,18 @@ const PaidNoteItem = ({ note, onEdit, onDelete }) => {
         <StyledText regularText>Observaciones:</StyledText>
         <StyledText regularText>{note.observaciones || 'N/A'}</StyledText>
       </View>
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button} onPress={() => setIsEditModalVisible(true)}>
-          <Icon name="edit" size={20} color={theme.colors.primary} />
-          <StyledText regularText style={styles.buttonText}>Editar</StyledText>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => setIsModalVisible(true)}>
-          <Icon name="delete" size={20} color={theme.colors.red} />
-          <StyledText regularText style={styles.buttonText}>Eliminar</StyledText>
-        </TouchableOpacity>
-      </View>
+      {isPaidToday && (
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.button} onPress={() => setIsEditModalVisible(true)}>
+            <Icon name="edit" size={20} color={theme.colors.primary} />
+            <StyledText regularText style={styles.buttonText}>Editar</StyledText>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => setIsModalVisible(true)}>
+            <Icon name="delete" size={20} color={theme.colors.red} />
+            <StyledText regularText style={styles.buttonText}>Eliminar</StyledText>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <Modal isVisible={isModalVisible} backdropColor="#9DBBE2" backdropOpacity={0.4}>
         <View style={[styles.modalContent, styles.modalShadow]}>
