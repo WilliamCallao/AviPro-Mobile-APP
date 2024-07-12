@@ -30,9 +30,18 @@ const ClientSearchScreen = () => {
   const fetchClientes = useCallback(async (empresaId) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/con-notas`);
-      setClientesConNotas(response.data);
-      setFilteredData(response.data);
+      const response = await axios.get(`${BASE_URL}/api/mobile/clientes/empresa/${empresaId}/notas-pendientes`);
+      // console.log("-----------client-serach--------------");
+      // console.log(JSON.stringify(response.data, null, 2));
+
+      // Filter out notes with saldo_pendiente equal to 0
+      const filteredClients = response.data.map(client => ({
+        ...client,
+        notas_pendientes: client.notas_pendientes.filter(nota => parseFloat(nota.saldo_pendiente) !== 0)
+      }));
+
+      setClientesConNotas(filteredClients);
+      setFilteredData(filteredClients);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching clientes: ", error);
@@ -136,7 +145,7 @@ const ClientSearchScreen = () => {
               </TouchableOpacity>
               <View style={styles.aviContainer}>
                 <StyledText boldCenterText style={styles.avi}>
-                  Cobranzas
+                  Clientes
                 </StyledText>
               </View>
             </View>
@@ -179,8 +188,8 @@ const styles = StyleSheet.create({
   },
   up: {
     backgroundColor: theme.colors.secondary,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     elevation: 7,
   },
   container: {
@@ -190,15 +199,16 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: 10,
+    paddingTop: 20,
+    paddingVertical: 10,
     alignItems: "center",
   },
   back: {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 20,
+    borderRadius: 25,
     width: 60,
     height: 60,
   },
@@ -206,6 +216,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: theme.colors.skyBlue,
+    marginLeft: 10,
+    height: 60,
+    borderRadius: 25,
   },
   avi: {
     marginRight: 40,

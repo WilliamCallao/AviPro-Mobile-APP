@@ -8,10 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 import Cascading from "../../animation/CascadingFadeInView";
 import { theme } from "../../assets/Theme";
 import InputWithDropdown from "./InputWithDropdown";
-import DateInputField from "../../components/DateInputField";
 import DropdownSelector from "../../components/DropdownSelector";
 import Dropdown from "./DropdownPay";
-import InputField from "../../components/InputField.js";
 import ObservationsInputField from "./ObservationsInputField";
 import { format } from "date-fns";
 import axios from 'axios';
@@ -24,16 +22,18 @@ const screenWidth = Dimensions.get("window").width;
 
 const PayScreen = ({ route }) => {
     const { note } = route.params;
+    // console.log("---------pay-screen--------");
+    // console.log(JSON.stringify(note, null, 2));
     const navigation = useNavigation();
     const [animationKey, setAnimationKey] = useState(Date.now());
 
     const [cashAccounts, setCashAccounts] = useState([]);
     const [bankAccounts, setBankAccounts] = useState([]);
     const [selectedCurrency, setSelectedCurrency] = useState('BS   ');
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('efectivo');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
-    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'dd-MM-yyyy HH:mm:ss'));
     const [clientName, setClientName] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -83,6 +83,10 @@ const PayScreen = ({ route }) => {
         setAnimationKey(Date.now());
     };
 
+    const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    };
+
     const {
         control,
         handleSubmit,
@@ -92,8 +96,6 @@ const PayScreen = ({ route }) => {
             amount: "",
             currency: "",
             payMode: "",
-            checkBankNumber: "",
-            checkBankDate: "",
             account: "",
             reference: "",
             observations: "",
@@ -116,45 +118,41 @@ const PayScreen = ({ route }) => {
             return account ? account.cuenta : '';
         };
 
+        const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
+        
         const commonData = {
             empresa_id: note.empresa_id,
             sucursal_id: note.sucursal_id,
             cuenta: note.cuenta,
+            fecha: format(new Date(), 'dd-MM-yyyy'),
             pago_a_nota: note.nro_nota,
             monto: parseFloat(data.amount),
             moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
-            modo_pago: selectedPaymentMethod === 'cheque' ? 'B' : selectedPaymentMethod[0].toUpperCase(),
-            observaciones: data.observations || null,
-            fecha_registro: new Date()
+            modo_pago: selectedPaymentMethod[0].toUpperCase(),
+            cta_deposito: selectedPaymentMethod.toLowerCase() === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts),
+            observaciones: data.observations || '',
+            nro_factura: note.nro_factura,
+            cobrador_id: cobrador_id,
         };
 
-        if (selectedPaymentMethod === 'efectivo' || selectedPaymentMethod === 'banco') {
-            commonData.cta_deposito = selectedPaymentMethod === 'efectivo' ? getAccountNumber(selectedCash, cashAccounts) : getAccountNumber(selectedBank, bankAccounts);
-        }
-
-        if (selectedPaymentMethod === 'cheque') {
-            commonData.fecha = selectedDate;
-            commonData.referencia = data.reference || null;
-        }
-
         try {
-            const name = await AsyncStorage.getItem('@cobrador_id');
-            await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/register`, commonData);
-
-            await axios.put(`${BASE_URL}/api/mobile/notas-pendientes/${note.empresa_id}/${note.sucursal_id}/${note.cuenta}/${note.nro_nota}`, {
-                monto_pagado: parseFloat(data.amount)
-            });
-
-            // Registrar el pago en el historial
-            await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, {
-                empresa_id: note.empresa_id,
-                cobrador_id: name,
-                nombre_cliente: clientName,
-                monto: parseFloat(data.amount)
-            });
+            // Registrar el pago
+            await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
 
             // Agregar la nota cobrada al store de Zustand
             addNotaCobrada(commonData);
+
+            // Crear el registro en el historial de cobros
+            const historialData = {
+                empresa_id: note.empresa_id,
+                cobrador_id: cobrador_id,
+                nombre_cliente: clientName,
+                monto: parseFloat(data.amount),
+                accion: 'Cobro de nota',
+                cuenta: note.cuenta,
+                observaciones: data.observations || ''
+            };
+            await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, historialData);
 
             setIsProcessing(false);
             setSuccessMessage('El pago ha sido registrado correctamente');
@@ -165,38 +163,9 @@ const PayScreen = ({ route }) => {
             }, 2000);
         } catch (error) {
             console.error('Error updating note:', error);
-            await handleRollback(commonData, data.amount, name, clientName);
             setIsProcessing(false);
             setSuccessMessage('');
             Alert.alert('Error', 'Ocurrió un error al registrar el pago');
-        }
-    };
-
-    const handleRollback = async (commonData, amount, cobrador_id, nombre_cliente) => {
-        try {
-            await axios.post(`${BASE_URL}/api/mobile/notas-cobradas/rollback`, {
-                empresa_id: commonData.empresa_id,
-                sucursal_id: commonData.sucursal_id,
-                cuenta: commonData.cuenta,
-                pago_a_nota: commonData.pago_a_nota
-            });
-
-            await axios.post(`${BASE_URL}/api/mobile/notas-pendientes/rollback`, {
-                empresa_id: commonData.empresa_id,
-                sucursal_id: commonData.sucursal_id,
-                cuenta: commonData.cuenta,
-                nro_nota: commonData.pago_a_nota,
-                monto: parseFloat(amount)
-            });
-
-            await axios.post(`${BASE_URL}/api/mobile/historial-cobros/rollback`, {
-                empresa_id: commonData.empresa_id,
-                cobrador_id: cobrador_id,
-                nombre_cliente: nombre_cliente,
-                monto: parseFloat(amount)
-            });
-        } catch (rollbackError) {
-            console.error('Error during rollback:', rollbackError);
         }
     };
 
@@ -221,7 +190,7 @@ const PayScreen = ({ route }) => {
                     <Cascading delay={200} animationKey={animationKey}>
                         <DropdownSelector
                             title="Deposito"
-                            options={['efectivo', 'banco', 'cheque']}
+                            options={['efectivo', 'banco'].map(capitalizeFirstLetter)}
                             selectedOption={selectedPaymentMethod}
                             onOptionChange={handlePaymentMethodChange}
                         />
@@ -253,8 +222,6 @@ const PayScreen = ({ route }) => {
                                     <StyledText regularText style={styles.noteDetailLabel}>Fecha de la Nota:</StyledText>
                                     <StyledText regularText style={styles.noteDetailValue}>{format(new Date(note.fecha), 'dd/MM/yyyy')}</StyledText>
                                 </View>
-
-
                             </View>
                         </Cascading>
                         <Cascading delay={400} animationKey={animationKey}>
@@ -276,41 +243,22 @@ const PayScreen = ({ route }) => {
                                 handleCurrencyChange={handleCurrencyChange}
                             />
                         </Cascading>
-                        {selectedPaymentMethod === 'efectivo' &&
+                        {selectedPaymentMethod.toLowerCase() === 'efectivo' &&
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={cashAccounts.map(c => c.descripcion)}
+                                    options={cashAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
                                     selectedOption={selectedCash}
                                     onOptionChange={setSelectedCash}
                                 />
                             </Cascading>}
-                        {selectedPaymentMethod === 'banco' &&
+                        {selectedPaymentMethod.toLowerCase() === 'banco' &&
                             <Cascading delay={480} animationKey={animationKey}>
                                 <Dropdown
                                     title="Cta/Caja Banco"
-                                    options={bankAccounts.map(c => c.descripcion)}
+                                    options={bankAccounts.map(c => capitalizeFirstLetter(c.descripcion))}
                                     selectedOption={selectedBank}
                                     onOptionChange={setSelectedBank}
-                                />
-                            </Cascading>}
-                        {selectedPaymentMethod === 'cheque' &&
-                            <Cascading delay={480} animationKey={animationKey}>
-                                <DateInputField
-                                    control={control}
-                                    name="checkBankDate"
-                                    title="Fecha Cheque"
-                                    callThrough={setSelectedDate}
-                                    isEditable={true}
-                                />
-                            </Cascading>}
-                        {selectedPaymentMethod === 'cheque' &&
-                            <Cascading delay={500} animationKey={animationKey}>
-                                <InputField
-                                    control={control}
-                                    name="reference"
-                                    title="Referencia"
-                                    type="default"
                                 />
                             </Cascading>}
                         <Cascading delay={560} animationKey={animationKey}>
@@ -340,7 +288,7 @@ const PayScreen = ({ route }) => {
                     {isProcessing ? (
                         <>
                             <ActivityIndicator size="large" color={theme.colors.black} />
-                            <StyledText style={styles.modalText}>Registrando pago...</StyledText>
+                            <StyledText regularText style={styles.modalText}>Registrando pago...</StyledText>
                         </>
                     ) : (
                         successMessage ? (
@@ -378,15 +326,14 @@ const PayScreen = ({ route }) => {
 
 const styles = StyleSheet.create({
     cover: {
-        backgroundColor: theme.colors.primary,
         zIndex: 1,
     },
     up: {
         backgroundColor: theme.colors.secondary,
-        borderBottomLeftRadius: 22,
-        borderBottomRightRadius: 22,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25,
         elevation: 7,
-        paddingBottom: 20,
+        paddingBottom: 10,
     },
     container: {
         flex: 1,
@@ -395,15 +342,16 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: "row",
-        paddingHorizontal: 20,
-        paddingVertical: 20,
+        paddingHorizontal: 10,
+        paddingTop: 20,
+        paddingBottom: 10,
         alignItems: "center",
     },
     back: {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: theme.colors.skyBlue,
-        borderRadius: 20,
+        borderRadius: 25,
         width: 60,
         height: 60,
     },
@@ -411,6 +359,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        height: 60,
+        marginLeft:10,
+        borderRadius: 25,
+        backgroundColor: theme.colors.skyBlue,
     },
     clientName: {
         textAlign: 'center',
@@ -439,7 +391,7 @@ const styles = StyleSheet.create({
         color: "#9A9A9A",
     },
     buttonContainer: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
         marginBottom: 20,
     },
     button: {
@@ -447,18 +399,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingVertical: 12,
         backgroundColor: theme.colors.tertiary,
-        borderRadius: 22,
+        borderRadius: 20,
         width: '100%',
     },
     modalContent: {
         backgroundColor: theme.colors.primary,
         padding: 20,
-        borderRadius: 10,
+        borderRadius: 25,
         alignItems: 'center',
     },
     modalText: {
         marginVertical: 10,
-        // color: theme.colors.primary,
     },
     modalDetailText: {
         marginVertical: 5,

@@ -14,10 +14,6 @@ const fontSizeL = screenWidth * 0.05;
 const InvoiceModal = ({ isVisible, onCancel, notasCobradas = [], formattedDate, clientName, collectorName }) => {
   const viewRef = useRef();
 
-  useEffect(() => {
-    console.log('Notas Cobradas Store:', notasCobradas);
-  }, [notasCobradas]);
-
   const captureAndShareScreenshot = async () => {
     try {
       const uri = await captureRef(viewRef.current, {

@@ -34,7 +34,7 @@ const ClientDebit = ({ clientInfo }) => {
         setClientName(capitalizeFirstLetter(cliente.nombre));
       } catch (error) {
         // console.error("Error fetching client name: ", error);
-        console.log("no hay notas cobradas");
+        // console.log("no hay notas cobradas");
       }
     };
 
@@ -73,9 +73,9 @@ const ClientDebit = ({ clientInfo }) => {
   const currentDate = new Date();
   const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
 
-  useEffect(() => {
-    console.log('Notas Cobradas Store:', notasCobradas);
-  }, [notasCobradas]);
+  const handleAutomaticPress = () => {
+    navigation.navigate("AutomaticPayScreen", { clientInfo });
+  };
 
   return (
     <View style={clientDebitStyles.container}>
@@ -90,13 +90,13 @@ const ClientDebit = ({ clientInfo }) => {
       <View style={clientDebitStyles.spaceButtons}>
         <SimpleButton
           text="Automático"
-          onPress={() => navigation.navigate("SelectPayModeScreen", { clientInfo })}
-          width={screenWidth * 0.4}
+          onPress={handleAutomaticPress}
+          width={screenWidth * 0.435}
         />
         <SimpleButton
           text="Recibo"
           onPress={handleReciboPress}
-          width={screenWidth * 0.4}
+          width={screenWidth * 0.435}
         />
       </View>
       <InvoiceModal
@@ -115,10 +115,10 @@ const ClientDebit = ({ clientInfo }) => {
 const clientDebitStyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 22,
-    width: screenWidth - 40,
+    borderRadius: 25,
+    width: screenWidth - 20,
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   spaceButtons: {
     flexDirection: "row",
@@ -127,17 +127,10 @@ const clientDebitStyles = StyleSheet.create({
     marginBottom: 10,
   },
   text: {
-    padding: 15,
+    padding: 10,
   },
   loader: {
-    padding: 18,
-  },
-  button: {
-    backgroundColor: theme.colors.tertiary,
-    borderRadius: 22,
-    paddingVertical: 12,
-    padding: 10,
-    width: screenWidth * 0.4,
+    padding: 14,
   },
 });
 

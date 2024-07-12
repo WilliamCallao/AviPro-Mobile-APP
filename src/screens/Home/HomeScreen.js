@@ -1,62 +1,72 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { SafeAreaView, StyleSheet, View, FlatList, ActivityIndicator, Text } from "react-native";
+import { SafeAreaView, StyleSheet, View, ActivityIndicator, Alert } from "react-native";
 import ProfileHeader from "./ProfileHeader";
-import StoryItem from "./StoryItem";
 import { theme } from "../../assets/Theme";
 import DropdownSelector from "../../components/DropdownSelector";
 import Cascading from "../../animation/CascadingFadeInView";
 import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import StyledText from "../../utils/StyledText";
+import Timeline from 'react-native-timeline-flatlist';
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
-import StyledText from "../../utils/StyledText";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NewScreen = () => {
   const [selectedOption, setSelectedOption] = useState("Hoy");
-  const OPCIONES = ['Hoy', 'Ayer', 'Esta Semana', 'Este Mes', 'Todo'];
+  const OPCIONES = ['Hoy', 'Ayer'];
   const title = 'Actividad';
-  const [historyData, setHistoryData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [animationKey, setAnimationKey] = useState(Date.now());
+  const [historyData, setHistoryData] = useState([]);
 
-  const fetchData = async (empresa_id, cobrador_id, filtro) => {
+  const fetchStorageData = useCallback(async () => {
     setLoading(true);
     try {
+      const empresa_id = await AsyncStorage.getItem('@empresa_id');
+      const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
+      let filtro;
+
+      switch (selectedOption) {
+        case 'Hoy':
+          filtro = 'hoy';
+          break;
+        case 'Ayer':  
+          filtro = 'ayer';
+          break;
+        case 'Esta Semana':
+          filtro = 'ultima_semana';
+          break;
+        case 'Este Mes':
+          filtro = 'ultimo_mes';
+          break;
+        case 'Todo':
+        default:
+          filtro = '';
+      }
+
       const response = await axios.get(`${BASE_URL}/api/mobile/historial-cobros/${empresa_id}/${cobrador_id}/${filtro}`);
       const sortedData = response.data.sort((a, b) => new Date(`${b.fecha}T${b.hora}`) - new Date(`${a.fecha}T${a.hora}`));
-      setHistoryData(sortedData);
+      setHistoryData(transformData(sortedData));
     } catch (error) {
-      console.error("Error fetching history data: ", error);
+      console.error("Error fetching history data:", error);
+      Alert.alert("Error", "Ocurrió un error al obtener los datos del historial.");
     } finally {
       setLoading(false);
     }
+  }, [selectedOption]);
+
+  const capitalizeWords = (str) => {
+    return str.replace(/\b\w/g, char => char.toUpperCase());
   };
 
-  const fetchStorageData = useCallback(async () => {
-    const empresa_id = await AsyncStorage.getItem('@empresa_id');
-    const cobrador_id = await AsyncStorage.getItem('@cobrador_id');
-    let filtro;
-
-    switch (selectedOption) {
-      case 'Hoy':
-        filtro = 'hoy';
-        break;
-      case 'Ayer':
-        filtro = 'ayer';
-        break;
-      case 'Esta Semana':
-        filtro = 'ultima_semana';
-        break;
-      case 'Este Mes':
-        filtro = 'ultimo_mes';
-        break;
-      case 'Todo':
-      default:
-        filtro = '';
-    }
-
-    await fetchData(empresa_id, cobrador_id, filtro);
-  }, [selectedOption]);
+  const transformData = (data) => {
+    return data.map(item => ({
+      time: item.hora ? item.hora.substring(0, 5) : 'N/A',
+      title: `${item.accion} (${parseFloat(item.monto).toFixed(2)} Bs)`,
+      description: capitalizeWords(item.nombre_cliente.toLowerCase()),
+      observaciones: item.observaciones || '',
+    }));
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -68,12 +78,6 @@ const NewScreen = () => {
   const onOptionChange = (option) => {
     setSelectedOption(option);
   };
-
-  const renderHistoryItem = ({ item, index }) => (
-    <Cascading delay={index > 6 ? 0 : 400 + 80 * index} animationKey={animationKey}>
-      <StoryItem story={item} />
-    </Cascading>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -96,13 +100,37 @@ const NewScreen = () => {
             <StyledText regularText>No hay actividad reciente</StyledText>
           </View>
         ) : (
-          <FlatList
-            data={historyData}
-            renderItem={renderHistoryItem}
-            keyExtractor={(item) => item.id.toString()}
-            ListHeaderComponent={<View style={{ height: 10 }} />}
-            ListFooterComponent={<View style={{ height: 10 }} />}
-          />
+          <Timeline
+              data={historyData}
+              circleSize={15}
+              circleColor="#3B4753"
+              lineColor='#3B4753'
+              listViewContainerStyle={{paddingVertical:20}}
+              timeContainerStyle={{ minWidth: 60, justifyContent: 'center', marginTop:-10 }}
+              timeStyle={{ textAlign: 'center', backgroundColor: "#3B4753", color: 'white', paddingVertical: 5, paddingHorizontal: 15, borderRadius: 20 }}
+              options={{
+                style: { paddingTop: 20, paddingHorizontal:20 }
+              }}
+              renderDetail={(rowData, sectionID, rowID) => {
+                let title = <StyledText regularIntenceText style={{marginTop:-17}}>{rowData.title}</StyledText>;
+                let desc = null;
+                if (rowData.description)
+                  desc = (
+                    <View style={{marginBottom:30}}>
+                      <StyledText regularText style={{ marginTop: 5 }}>{rowData.description}</StyledText>
+                      {rowData.observaciones ? <StyledText regularText style={{ marginTop: 5 }}>{rowData.observaciones}</StyledText> : null}
+                    </View>
+                  );
+
+                return (
+                  <View style={{ flex: 1 }}>
+                    {title}
+                    {desc}
+                  </View>
+                );
+              }}
+            />
+
         )}
       </View>
     </SafeAreaView>
@@ -116,11 +144,11 @@ const styles = StyleSheet.create({
   header: {
     zIndex: 1,
     paddingTop: 40,
-    paddingBottom: 18,
+    paddingBottom: 10,
     paddingVertical: 20,
     backgroundColor: theme.colors.secondary,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     elevation: 5,
   },
   listContainer: {

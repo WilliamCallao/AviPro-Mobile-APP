@@ -38,6 +38,10 @@ const CobradoresScreen = () => {
       const response = await fetch(`${BASE_URL}/api/mobile/cobradores/${id}`);
       const data = await response.json();
       setCobradores(data);
+      // Set the first cobrador as default if no cobrador is selected
+      if (data.length > 0) {
+        await handleSelectCobrador(data[0], false); // select the first cobrador but do not navigate
+      }
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al obtener la lista de cobradores.');
     } finally {
@@ -45,8 +49,7 @@ const CobradoresScreen = () => {
     }
   };
 
-  const handleSelectCobrador = async (cobrador) => {
-    // console.log(cobrador);
+  const handleSelectCobrador = async (cobrador, shouldNavigate = true) => {
     try {
       await AsyncStorage.setItem('@cobrador_id', cobrador ? cobrador.cobrador_id : '');
       await AsyncStorage.setItem('@cobrador_nombre', cobrador ? cobrador.nombre : '');
@@ -54,11 +57,15 @@ const CobradoresScreen = () => {
       const idEmpresa = await AsyncStorage.getItem('@empresa_id');
       const savedCobradorId = await AsyncStorage.getItem('@cobrador_id');
       const savedCobradorNombre = await AsyncStorage.getItem('@cobrador_nombre');
+      const codigo = await AsyncStorage.getItem('@codigo_activacion');
       // console.log('Empresa ID guardado:', idEmpresa);
       // console.log('Cobrador ID guardado:', savedCobradorId);
       // console.log('Cobrador Nombre guardado:', savedCobradorNombre);
+      // console.log('Cobrador Nombre guardado:', codigo);
 
-      navigation.navigate('NewScreen');
+      if (shouldNavigate) {
+        navigation.navigate('NewScreen');
+      }
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al guardar la información del cobrador.');
     }
@@ -88,17 +95,6 @@ const CobradoresScreen = () => {
                 </View>
               </TouchableOpacity>
             )}
-            ListFooterComponent={
-              <TouchableOpacity style={styles.item} onPress={() => handleSelectCobrador(null)}>
-                <View style={styles.iconWraped}>
-                  <StyledText initial>O</StyledText>
-                </View>
-                <View style={styles.itemTextContainer}>
-                  <StyledText regularBlackText style={styles.empresaText}>{empresaNombre}</StyledText>
-                  <StyledText boldText style={styles.itemText}>Otro</StyledText>
-                </View>
-              </TouchableOpacity>
-            }
           />
         )}
         <StyledText regularBlackText style={styles.footerText}>
@@ -117,7 +113,7 @@ const styles = StyleSheet.create({
   header: {
     marginTop: 50,
     paddingTop: 20,
-    paddingBottom: 10,
+    paddingBottom: 30,
     paddingHorizontal: 20,
     alignItems: 'center',
   },
@@ -125,15 +121,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 10,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 25,
+    marginBottom: 20,
   },
   itemTextContainer: {
     marginLeft: 10,
@@ -148,9 +144,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.tertiary,
-    borderRadius: 10,
-    width: 50,
-    height: 50, 
+    borderRadius: 20,
+    width: 55,
+    height: 55, 
   },
   initial: {
     color: "white",

@@ -1,25 +1,13 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import {
-  View, StyleSheet, Animated, TouchableWithoutFeedback, TouchableOpacity
+  View, StyleSheet, TouchableWithoutFeedback, Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/FontAwesome";
 import { theme } from "../../assets/Theme";
 import StyledText from "../../utils/StyledText";
+const windowWidth = Dimensions.get('window').width;
 
-const NoteItem = ({ note, onSelect }) => {
-  const [expanded, setExpanded] = useState(false);
-  const animationHeight = useRef(new Animated.Value(85)).current;
-
-  const toggleExpansion = () => {
-    setExpanded(!expanded);
-    Animated.timing(animationHeight, {
-      toValue: expanded ? 85 : 250,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
-
+const NoteItem = ({ note }) => {
   const navigation = useNavigation();
 
   const formatDate = (dateString) => {
@@ -32,56 +20,46 @@ const NoteItem = ({ note, onSelect }) => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={toggleExpansion}>
-      <Animated.View style={[noteItemstyles.container, { height: animationHeight }]}>
+    <TouchableWithoutFeedback onPress={() => navigation.navigate("PayScreen", { note })}>
+      <View style={noteItemstyles.container}>
         <View style={noteItemstyles.row}>
-          <View>
-            <StyledText boldText>{note.nro_nota}</StyledText>
-            <StyledText regularText>{formatDate(note.fecha_venta)}</StyledText>
+          <View style={noteItemstyles.column2}>
+            <StyledText boldText style={noteItemstyles.label}>Nota:</StyledText>
+            <StyledText boldText style={noteItemstyles.value}>{note.nro_nota}</StyledText>
           </View>
-          <StyledText money>{note.saldo_pendiente} Bs</StyledText>
-          <TouchableOpacity
-            style={{
-              backgroundColor: theme.colors.green,
-              paddingHorizontal: 15,
-              padding: 10,
-              borderRadius: 15,
-            }}
-            onPress={() =>
-              navigation.navigate("PayScreen", { note })
-            }
-          >
-            <Icon name="money" size={30} color={"black"} />
-          </TouchableOpacity>
+          <View style={noteItemstyles.column2}>
+            <StyledText boldText style={noteItemstyles.label}>Factura:</StyledText>
+            <StyledText boldText style={noteItemstyles.value}>{note.nro_factura}</StyledText>
+          </View>
+          <View style={noteItemstyles.column2}>
+            <StyledText boldText style={noteItemstyles.label}>Saldo:</StyledText>
+            <StyledText money style={noteItemstyles.value}>{note.saldo_pendiente} Bs</StyledText>
+          </View>
         </View>
-        {expanded && (
-          <>
-            <View style={[noteItemstyles.textLine, { marginTop: 20 }]}>
-              <StyledText regularText>Importe:</StyledText>
-              <StyledText regularText>{note.importe_nota} Bs</StyledText>
-            </View>
-            <View style={noteItemstyles.textLine}>
-              <StyledText regularText>Monto Pagado:</StyledText>
-              <StyledText regularText>{note.monto_pagado} Bs</StyledText>
-            </View>
-            <View style={noteItemstyles.textLine}>
-              <StyledText regularText>Saldo Pendiente:</StyledText>
-              <StyledText regularText>{note.saldo_pendiente} Bs</StyledText>
-            </View>
-            <View style={noteItemstyles.textLine}>
-              <StyledText regularText>Fecha de Venta:</StyledText>
-              <StyledText regularText>{formatDate(note.fecha_venta)}</StyledText>
-            </View>
-            <View style={noteItemstyles.textLine}>
-              <StyledText regularText>Fecha de Vencimiento:</StyledText>
-              <StyledText regularText>{formatDate(note.fecha_vence)}</StyledText>
-            </View>
-          </>
-        )}
-        <View style={noteItemstyles.iconContainer}>
-          <Icon name={expanded ? "angle-up" : "angle-down"} size={20} color={theme.colors.black} />
+        <View style={noteItemstyles.lineContainer}>
+         <View style={noteItemstyles.line}></View>
         </View>
-      </Animated.View>
+        <View style={noteItemstyles.row}>
+          <View style={noteItemstyles.column}>
+            <StyledText regularText style={noteItemstyles.label}>Fecha Venta:</StyledText>
+            <StyledText regularText style={noteItemstyles.value}>{formatDate(note.fecha_venta)}</StyledText>
+          </View>
+          <View style={noteItemstyles.column}>
+            <StyledText regularText style={noteItemstyles.label}>   Vencimiento:</StyledText>
+            <StyledText regularText style={noteItemstyles.value}>   {formatDate(note.fecha_vence)}</StyledText>
+          </View>
+        </View>
+        <View style={noteItemstyles.row}>
+          <View style={noteItemstyles.column}>
+            <StyledText regularText style={noteItemstyles.label}>Importe:</StyledText>
+            <StyledText regularText style={noteItemstyles.value}>{note.importe_nota} Bs</StyledText>
+          </View>
+          <View style={noteItemstyles.column}>
+            <StyledText regularText style={noteItemstyles.label}>   Monto Pagado:</StyledText>
+            <StyledText regularText style={noteItemstyles.value}>   {note.monto_pagado} Bs</StyledText>
+          </View>
+        </View>
+      </View>
     </TouchableWithoutFeedback>
   );
 };
@@ -89,12 +67,13 @@ const NoteItem = ({ note, onSelect }) => {
 const noteItemstyles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    marginVertical: 8,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    marginVertical: 10,
     marginHorizontal: 20,
     borderWidth: 2,
-    borderRadius: 20,
+    borderLeftWidth: 2,
+    borderRadius: 15,
     borderColor: theme.colors.otherWhite,
     overflow: "hidden",
   },
@@ -102,20 +81,22 @@ const noteItemstyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginVertical: 3,
   },
-  textLine: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  lineContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  iconContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
-    position: "absolute",
-    bottom: 5,
-    left: "55%",
-    transform: [{ translateX: -10 }],
+  line: {
+    marginVertical: 5,
+    backgroundColor: theme.colors.otherWhite,
+    width: windowWidth * 0.80,
+    height: 2,
+  },
+  column: {
+    flex: 1,
+  },
+  column2: {
   },
 });
 

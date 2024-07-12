@@ -127,6 +127,9 @@ const ProfileHeader = () => {
             <StyledText boldText style={styles.buttonText2}>Ventas</StyledText>
           </TouchableOpacity>
         </View>
+        {/* <TouchableOpacity style={styles.clearButton} onPress={handleClearStorage}>
+          <StyledText buttonText>Borrar Datos</StyledText>
+        </TouchableOpacity> */}
       </Cascading>
     </View>
   );
@@ -135,21 +138,21 @@ const ProfileHeader = () => {
 const styles = StyleSheet.create({
   maxContainer: {
     backgroundColor: theme.colors.secondary,
-    marginBottom: 5,
+    // marginBottom: 5,
   },
   accountContainer: {
     flexDirection: 'row',
     backgroundColor: theme.colors.skyBlue,
-    marginHorizontal: 20,
+    marginHorizontal: 10,
     padding: 10,
-    borderRadius: 20,
-    marginBottom: 10,
+    borderRadius: 25,
+    // marginBottom: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   letter: {
     backgroundColor: theme.colors.tertiary,
-    borderRadius: 17,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     width: 55,
@@ -173,17 +176,17 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 10,
+    marginHorizontal: 5,
   },
   button: {
-    marginTop: 8,
+    marginTop: 10,
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 20,
-    width: screenWidth * 0.25,
+    borderRadius: 25,
+    // width: screenWidth * 0.25,
     height: screenWidth * 0.22,
     flex: 1,
-    marginHorizontal: 10,
+    marginHorizontal: 5,
     justifyContent: 'flex-end',
     paddingVertical: 10,
     paddingLeft: 13,
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
     color: '#8097B6',
   },
   clearButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: 'red',
     padding: 10,
     borderRadius: 20,
     marginHorizontal: 20,

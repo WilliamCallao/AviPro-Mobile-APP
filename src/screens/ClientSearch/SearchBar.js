@@ -66,14 +66,14 @@ const SearchBar = ({ searchQuery, setSearchQuery, selectedOption, onOptionChange
 
 const searchBarStyles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 10,
     flexDirection: "row",
-    padding: 8,
-    paddingLeft: 12,
+    padding: 10,
+    paddingLeft: 20,
     backgroundColor: theme.colors.skyBlue,
-    borderRadius: 22,
+    borderRadius: 25,
     alignItems: "center",
-    marginHorizontal: windowWidth * 0.05,
+    marginHorizontal: 10,
   },
   searchTextInput: {
     flex: 1,
@@ -83,10 +83,10 @@ const searchBarStyles = StyleSheet.create({
     color: theme.colors.primaryText,
   },
   trigger: {
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 25,
     backgroundColor: theme.colors.tertiary,
-    borderRadius: 22,
+    borderRadius: 20,
   },
   optionsContainer: {
     paddingVertical: 15,
