@@ -36,6 +36,7 @@
     "react-native-safe-area-context": "4.10.1",
     "react-native-screens": "3.31.1",
     "react-native-svg": "15.2.0",
+    "react-native-timeline-flatlist": "^0.8.0",
     "react-native-vector-icons": "^10.0.3",
     "react-native-view-shot": "^3.8.0",
     "remixicon": "^4.2.0",

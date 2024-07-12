@@ -136,10 +136,23 @@ const PayScreen = ({ route }) => {
         };
 
         try {
+            // Registrar el pago
             await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
 
             // Agregar la nota cobrada al store de Zustand
             addNotaCobrada(commonData);
+
+            // Crear el registro en el historial de cobros
+            const historialData = {
+                empresa_id: note.empresa_id,
+                cobrador_id: cobrador_id,
+                nombre_cliente: clientName,
+                monto: parseFloat(data.amount),
+                accion: 'Cobro de nota',
+                cuenta: note.cuenta,
+                observaciones: data.observations || ''
+            };
+            await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, historialData);
 
             setIsProcessing(false);
             setSuccessMessage('El pago ha sido registrado correctamente');
