@@ -119,10 +119,13 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate, clientName }) => {
         <StyledText regularText>Número de Factura:</StyledText>
         <StyledText regularText>{note.nro_factura}</StyledText>
       </View>
-      <View style={styles.textLine}>
+      {note.observaciones && note.observaciones.length > 0 && (
+        
+        <View style={styles.observationsContainer}>
         <StyledText regularText>Observaciones:</StyledText>
-        <StyledText regularText>{note.observaciones || 'N/A'}</StyledText>
-      </View>
+          <StyledText regularText style={styles.observationsText}>{note.observaciones}</StyledText>
+        </View>
+      )}
       {isPaidToday && (
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.button} onPress={() => setIsEditModalVisible(true)}>
@@ -320,6 +323,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: theme.colors.secondaryText,
     color: theme.colors.black,
+  },
+  observationsContainer: {
+    flex: 1,
+  },
+  observationsText: {
+    flexWrap: 'wrap',
+    marginLeft: 20
   },
 });
 
