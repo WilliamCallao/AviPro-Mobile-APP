@@ -149,7 +149,8 @@ const PayScreen = ({ route }) => {
                 monto: parseFloat(data.amount),
                 accion: 'Cobro de nota',
                 cuenta: note.cuenta,
-                observaciones: data.observations || ''
+                observaciones: data.observations || '',
+                pago_a_nota: note.nro_nota
             };
             await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, historialData);
 
