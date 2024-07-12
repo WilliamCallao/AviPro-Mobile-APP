@@ -82,7 +82,7 @@ const ClientPaymentScreen = ({ route }) => {
       {selectedOption === 'Pendientes' ? (
         <NoteItem note={item} onSelect={() => { }} />
       ) : (
-        <PaidNoteItem note={item} onEdit={handleEditNote} onDelete={handleDeleteNote} serverDate={serverDate} />
+        <PaidNoteItem note={item} onEdit={handleEditNote} onDelete={handleDeleteNote} serverDate={serverDate} clientName={itemClient.nombre} />
       )}
     </Cascading>
   );
