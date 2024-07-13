@@ -33,7 +33,6 @@ const PayScreen = ({ route }) => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Efectivo');
     const [selectedCash, setSelectedCash] = useState('');
     const [selectedBank, setSelectedBank] = useState('');
-    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'dd-MM-yyyy HH:mm:ss'));
     const [clientName, setClientName] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -124,7 +123,7 @@ const PayScreen = ({ route }) => {
             empresa_id: note.empresa_id,
             sucursal_id: note.sucursal_id,
             cuenta: note.cuenta,
-            fecha: format(new Date(), 'dd-MM-yyyy'),
+            // fecha: format(new Date(), 'YYYY-MM-DD'),
             pago_a_nota: note.nro_nota,
             monto: parseFloat(data.amount),
             moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
@@ -133,6 +132,7 @@ const PayScreen = ({ route }) => {
             observaciones: data.observations || '',
             nro_factura: note.nro_factura,
             cobrador_id: cobrador_id,
+            nombre_cliente: clientName,
         };
 
         try {
@@ -141,18 +141,6 @@ const PayScreen = ({ route }) => {
 
             // Agregar la nota cobrada al store de Zustand
             addNotaCobrada(commonData);
-
-            // Crear el registro en el historial de cobros
-            const historialData = {
-                empresa_id: note.empresa_id,
-                cobrador_id: cobrador_id,
-                nombre_cliente: clientName,
-                monto: parseFloat(data.amount),
-                accion: 'Cobro de nota',
-                cuenta: note.cuenta,
-                observaciones: data.observations || ''
-            };
-            await axios.post(`${BASE_URL}/api/mobile/historial-cobros`, historialData);
 
             setIsProcessing(false);
             setSuccessMessage('El pago ha sido registrado correctamente');

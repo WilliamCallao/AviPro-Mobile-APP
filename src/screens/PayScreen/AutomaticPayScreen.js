@@ -11,7 +11,6 @@ import InputWithDropdown from "./InputWithDropdown";
 import DropdownSelector from "../../components/DropdownSelector";
 import Dropdown from "./DropdownPay";
 import ObservationsInputField from "./ObservationsInputField";
-import { format } from "date-fns";
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -153,7 +152,7 @@ const AutomaticPayScreen = ({ route }) => {
                     empresa_id: clientInfo.empresa_id,
                     sucursal_id: clientInfo.sucursal_id,
                     cuenta: clientInfo.cuenta,
-                    fecha: format(new Date(), 'dd-MM-yyyy'),
+                    // fecha: note.fecha, // assuming note.fecha is the date of the note
                     pago_a_nota: note.nro_nota,
                     monto: note.monto_pagado,
                     moneda: selectedCurrency.trim() === 'BS' ? 'B' : 'U',
@@ -162,6 +161,8 @@ const AutomaticPayScreen = ({ route }) => {
                     observaciones: data.observations || '',
                     nro_factura: note.nro_factura,
                     cobrador_id: cobrador_id,
+                    nombre_cliente: clientInfo.nombre,
+                    fecha_registro: new Date().toISOString().split('T')[0], // adding current date
                 };
                 await axios.post(`${BASE_URL}/api/mobile/notas/process-payment`, commonData);
 

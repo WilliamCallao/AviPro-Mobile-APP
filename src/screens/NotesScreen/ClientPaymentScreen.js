@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { SafeAreaView, TouchableOpacity, Text, FlatList, StyleSheet, View, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { theme } from '../../assets/Theme';
 import { useNavigation } from '@react-navigation/native';
@@ -22,9 +22,19 @@ const ClientPaymentScreen = ({ route }) => {
   const [selectedOption, setSelectedOption] = useState('Pendientes');
   const [clientData, setClientData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [serverDate, setServerDate] = useState(null);
   const title = 'Notas';
   const OPCIONES = ['Pendientes', 'Pagadas'];
   const [animationKey, setAnimationKey] = useState(Date.now());
+
+  const fetchServerDate = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/fecha-servidor`);
+      setServerDate(response.data.fechaServidor);
+    } catch (error) {
+      console.error("Error fetching server date: ", error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -43,6 +53,7 @@ const ClientPaymentScreen = ({ route }) => {
   useFocusEffect(
     useCallback(() => {
       setAnimationKey(Date.now());
+      fetchServerDate();
       fetchData();
     }, [cuenta])
   );
@@ -56,7 +67,6 @@ const ClientPaymentScreen = ({ route }) => {
   };
 
   const handleDeleteNote = async (note) => {
-    // Eliminar la nota del estado después de que se haya confirmado la eliminación en PaidNoteItem
     setClientData(prevData => ({
       ...prevData,
       notas_cobradas: prevData.notas_cobradas.filter(n => n.fecha_registro !== note.fecha_registro)
@@ -72,7 +82,7 @@ const ClientPaymentScreen = ({ route }) => {
       {selectedOption === 'Pendientes' ? (
         <NoteItem note={item} onSelect={() => { }} />
       ) : (
-        <PaidNoteItem note={item} onEdit={handleEditNote} onDelete={handleDeleteNote} />
+        <PaidNoteItem note={item} onEdit={handleEditNote} onDelete={handleDeleteNote} serverDate={serverDate} clientName={itemClient.nombre} />
       )}
     </Cascading>
   );

@@ -23,6 +23,7 @@ const ObservationsInputField = ({ control, name, title, rules = {}, errors = {} 
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         value={value}
+                        maxLength={45}
                         multiline
                         numberOfLines={4}
                     />
