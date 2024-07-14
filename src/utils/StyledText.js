@@ -24,7 +24,12 @@ const styles = StyleSheet.create({
     fontSize: regularTextSize,
     color: theme.colors.secondaryText,
   },
-  regularBlackText: { // Nuevo estilo
+  regularWhiteText: {
+    fontSize: regularTextSize,
+    alignSelf: 'center',
+    color: "white",
+  },
+  regularBlackText: {
     fontSize: regularTextSize,
     color: theme.colors.black,
   },
@@ -67,7 +72,7 @@ const styles = StyleSheet.create({
 });
 
 const StyledText = ({
-  children, style, bill, boldCenterText, regularText, boldText, buttonText, boldTextUpper, initial, regularBlackText, regularIntenceText, balance, money, ...rest
+  children, style, bill, boldCenterText, regularWhiteText, regularText, boldText, buttonText, boldTextUpper, initial, regularBlackText, regularIntenceText, balance, money, ...rest
 }) => {
   const customStyles = [
     regularText && styles.regularText,
@@ -81,6 +86,7 @@ const StyledText = ({
     money && styles.money,
     boldCenterText && styles.boldCenterText,
     bill && styles.bill,
+    regularWhiteText && styles.regularWhiteText, 
     style,
   ].filter(Boolean);
 

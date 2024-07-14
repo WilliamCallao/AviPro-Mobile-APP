@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { theme } from '../../assets/Theme';
 import StyledText from '../../utils/StyledText';
@@ -11,9 +11,9 @@ import useNotasCobradasStore from '../../stores/notasCobradasStore';
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientName }) => {
-  // console.log("----Paid-Note-Item----");
+  // console.log("----Paid-Note-Item-Note---");
   // console.log(JSON.stringify(note, null, 2));
-  // console.log("----Paid-Note-Item----");
+  // console.log("----Paid-Note-Item-PendingNote---");
   // console.log(JSON.stringify(pendingNote, null, 2));
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -51,7 +51,7 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
           pago_a_nota: note.pago_a_nota,
           fecha_registro: note.fecha_registro,
           nombre_cliente: clientName,
-          cobrador_id: note.cobrador_id // Ensure cobrador_id is included in the note object
+          cobrador_id: note.cobrador_id
         }
       });
       if (response.status === 200) {
@@ -87,7 +87,7 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
         monto,
         observaciones,
         nombre_cliente: clientName,
-        cobrador_id: note.cobrador_id // Ensure cobrador_id is included in the note object
+        cobrador_id: note.cobrador_id
       });
       if (response.status === 200) {
         setSuccessMessage('Nota cobrada editada correctamente');
@@ -126,7 +126,6 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
         <StyledText regularText>{note.nro_factura}</StyledText>
       </View>
       {note.observaciones && note.observaciones.length > 0 && (
-        
         <View style={styles.observationsContainer}>
           <StyledText regularText>Observaciones:</StyledText>
           <StyledText regularText style={styles.observationsText}>{note.observaciones}</StyledText>
@@ -166,13 +165,13 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
                     style={[styles.modalButton, { backgroundColor: 'red' }]}
                     onPress={() => setIsModalVisible(false)}
                   >
-                    <StyledText style={styles.modalButtonText}>Cancelar</StyledText>
+                    <StyledText regularWhiteText style={styles.modalButtonText}>Cancelar</StyledText>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: 'green' }]}
                     onPress={handleDelete}
                   >
-                    <StyledText style={styles.modalButtonText}>Confirmar</StyledText>
+                    <StyledText regularWhiteText style={styles.modalButtonText}>Confirmar</StyledText>
                   </TouchableOpacity>
                 </View>
               </>
@@ -196,9 +195,20 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
               </>
             ) : (
               <>
-                <StyledText regularBlackText style={styles.modalText}>Editar Nota Cobrada</StyledText>
+                {true && (
+                    <View style={{marginTop:20, alignItems:'center', marginBottom:15}}>
+                      <View style={styles.textLine}>
+                        <StyledText regularBlackText>Cobro a Nota:</StyledText>
+                        <StyledText regularBlackText> {pendingNote.nro_nota}</StyledText>
+                      </View>
+                      <View style={styles.textLine}>
+                        <StyledText regularBlackText>Saldo Actual:</StyledText>
+                        <StyledText regularBlackText> {pendingNote.saldo_pendiente} Bs</StyledText>
+                      </View>                  
+                    </View>
+                  )}
                 <View style={styles.inputContainer}>
-                  <StyledText regularText style={styles.inputLabel}>Monto:</StyledText>
+                  <StyledText regularText style={styles.inputLabel}>Monto Cobrado: (Bs)</StyledText>
                   <TextInput
                     style={styles.input}
                     value={monto}
@@ -206,12 +216,15 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
                     keyboardType="numeric"
                   />
                 </View>
-                <View style={styles.inputContainer}>
-                  <StyledText regularText style={styles.inputLabel}>Observaciones:</StyledText>
+                <View style={styles.inputContainer2}>
+                  <StyledText regularText style={styles.inputLabel2}>Observaciones:</StyledText>
+                </View>
+                <View style={styles.inputContainer2}>
                   <TextInput
-                    style={styles.input}
+                    style={styles.input2}
                     value={observaciones}
                     onChangeText={setObservaciones}
+                    maxLength={45}
                   />
                 </View>
                 <View style={styles.modalButtonContainer}>
@@ -219,13 +232,13 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
                     style={[styles.modalButton, { backgroundColor: 'red' }]}
                     onPress={() => setIsEditModalVisible(false)}
                   >
-                    <StyledText style={styles.modalButtonText}>Cancelar</StyledText>
+                    <StyledText regularWhiteText>Cancelar</StyledText>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.modalButton, { backgroundColor: 'green' }]}
                     onPress={handleEdit}
                   >
-                    <StyledText style={styles.modalButtonText}>Confirmar</StyledText>
+                    <StyledText regularWhiteText>Confirmar</StyledText>
                   </TouchableOpacity>
                 </View>
               </>
@@ -316,19 +329,38 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 20,
   },
   inputLabel: {
-    flex: 1,
+    flex: 2,
     marginRight: 10,
   },
   input: {
-    flex: 2,
+    flex: 1,
     padding: 10,
     borderWidth: 1,
     borderRadius: 5,
     borderColor: theme.colors.secondaryText,
     color: theme.colors.black,
+  },
+  inputContainer2: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    marginVertical: 2,
+  },
+  inputLabel2: {
+    flex: 1,
+  },
+  input2: {
+    padding: 10,
+    flexDirection: 'row',
+    flex:1,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: theme.colors.secondaryText,
+    color: theme.colors.black,
+    marginBottom:20,
   },
   observationsContainer: {
     flex: 1,
