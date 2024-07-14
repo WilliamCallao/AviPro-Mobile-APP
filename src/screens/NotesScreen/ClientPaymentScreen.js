@@ -74,18 +74,29 @@ const ClientPaymentScreen = ({ route }) => {
     fetchData();
   };
 
-  const renderItem = ({ item, index }) => (
-    <Cascading
-      delay={index > 6 ? 0 : 400 + 80 * index}
-      animationKey={animationKey}
-    >
-      {selectedOption === 'Pendientes' ? (
-        <NoteItem note={item} onSelect={() => { }} />
-      ) : (
-        <PaidNoteItem note={item} onEdit={handleEditNote} onDelete={handleDeleteNote} serverDate={serverDate} clientName={itemClient.nombre} />
-      )}
-    </Cascading>
-  );
+  const renderItem = ({ item, index }) => {
+    const pendingNote = clientData.notas_pendientes.find(note => note.nro_nota === item.pago_a_nota);
+  
+    return (
+      <Cascading
+        delay={index > 6 ? 0 : 400 + 80 * index}
+        animationKey={animationKey}
+      >
+        {selectedOption === 'Pendientes' ? (
+          <NoteItem note={item} onSelect={() => { }} />
+        ) : (
+          <PaidNoteItem 
+            note={item} 
+            pendingNote={pendingNote}
+            onEdit={handleEditNote} 
+            onDelete={handleDeleteNote} 
+            serverDate={serverDate} 
+            clientName={itemClient.nombre} 
+          />
+        )}
+      </Cascading>
+    );
+  };
 
   const keyExtractor = (item, index) => {
     return item.nro_nota ? item.nro_nota.toString() : index.toString();
