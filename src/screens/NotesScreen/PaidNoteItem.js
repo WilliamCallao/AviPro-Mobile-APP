@@ -11,6 +11,8 @@ import useNotasCobradasStore from '../../stores/notasCobradasStore';
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const PaidNoteItem = ({ note, onEdit, onDelete, serverDate, clientName }) => {
+  // console.log("----Client-Payment-Screem----");
+  // console.log(JSON.stringify(note, null, 2));
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -40,6 +42,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate, clientName }) => {
     try {
       const response = await axios.delete(`${BASE_URL}/api/mobile/notas/notas-cobradas/delete`, {
         data: {
+          id: note.id,
           empresa_id: note.empresa_id,
           sucursal_id: note.sucursal_id,
           cuenta: note.cuenta,
@@ -73,6 +76,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate, clientName }) => {
     setIsProcessing(true);
     try {
       const response = await axios.put(`${BASE_URL}/api/mobile/notas/notas-cobradas/edit`, {
+        id: note.id,
         empresa_id: note.empresa_id,
         sucursal_id: note.sucursal_id,
         cuenta: note.cuenta,
@@ -122,7 +126,7 @@ const PaidNoteItem = ({ note, onEdit, onDelete, serverDate, clientName }) => {
       {note.observaciones && note.observaciones.length > 0 && (
         
         <View style={styles.observationsContainer}>
-        <StyledText regularText>Observaciones:</StyledText>
+          <StyledText regularText>Observaciones:</StyledText>
           <StyledText regularText style={styles.observationsText}>{note.observaciones}</StyledText>
         </View>
       )}

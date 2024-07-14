@@ -220,7 +220,10 @@ const PayScreen = ({ route }) => {
                                 type="numeric"
                                 rules={{
                                     required: "Este campo es requerido",
-                                    validate: value => parseFloat(value) <= note.saldo_pendiente || "El monto excede el saldo pendiente",
+                                    validate: {
+                                        positive: value => parseFloat(value) > 0 || "El monto debe ser mayor a 0",
+                                        notExceed: value => parseFloat(value) <= note.saldo_pendiente || "El monto excede el saldo pendiente"
+                                    },
                                     pattern: {
                                         value: /^[0-9]+([.][0-9]{0,2})?$/,
                                         message: "Ingrese solo números",
