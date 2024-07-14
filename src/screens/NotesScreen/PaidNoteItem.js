@@ -195,7 +195,7 @@ const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientN
               </>
             ) : (
               <>
-                {true && (
+                {pendingNote && (
                     <View style={{marginTop:20, alignItems:'center', marginBottom:15}}>
                       <View style={styles.textLine}>
                         <StyledText regularBlackText>Cobro a Nota:</StyledText>
