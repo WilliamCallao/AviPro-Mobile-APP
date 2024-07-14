@@ -10,9 +10,11 @@ import useNotasCobradasStore from '../../stores/notasCobradasStore';
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const PaidNoteItem = ({ note, onEdit, onDelete, serverDate, clientName }) => {
-  // console.log("----Client-Payment-Screem----");
+const PaidNoteItem = ({ note, pendingNote, onEdit, onDelete, serverDate, clientName }) => {
+  // console.log("----Paid-Note-Item----");
   // console.log(JSON.stringify(note, null, 2));
+  // console.log("----Paid-Note-Item----");
+  // console.log(JSON.stringify(pendingNote, null, 2));
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
