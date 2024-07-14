@@ -31,7 +31,7 @@ const SearchBar = ({ searchQuery, setSearchQuery, selectedOption, onOptionChange
         </TouchableOpacity>
       )}
       <TextInput
-        placeholder="Search..."
+        placeholder="Buscar..."
         style={searchBarStyles.searchTextInput}
         onChangeText={setSearchQuery}
         value={searchQuery}
